@@ -6,9 +6,9 @@ This roadmap breaks the implementation into small, testable phases ordered from 
 
 ---
 
-## Progress evidence — 2026-11-02
+## Progress evidence — 2026-11-03
 
-Phase 1 and the local Phase 2 database implementation are complete. Phase 2's migration and security tests passed in disposable PostgreSQL; the hosted Supabase project and remote role/API verification remain pending. Evidence is recorded in [docs/PHASE_1_REPORT.md](docs/PHASE_1_REPORT.md) and [docs/PHASE_2_REPORT.md](docs/PHASE_2_REPORT.md). No authentication UI, survey workflow, hosted database, or deployment is certified complete.
+Phase 1, the local Phase 2 database implementation, and Phase 3 instructor authentication are complete. A configured Supabase Auth endpoint was reached successfully and the migration was reported as manually applied, but the rollback-safe remote SQL/RLS suite and real role-specific client verification remain pending. Database lifecycle and submission invariants passed disposable PostgreSQL tests. All dashboard, survey editor, presentation, student survey, results, CSV, and deployment screens remain placeholders or unimplemented. Evidence is recorded in [docs/PHASE_1_REPORT.md](docs/PHASE_1_REPORT.md), [docs/PHASE_2_REPORT.md](docs/PHASE_2_REPORT.md), [docs/REMOTE_DATABASE_VERIFICATION.md](docs/REMOTE_DATABASE_VERIFICATION.md), and [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md).
 
 The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TODO_ORIGINAL.md). The public route is `/s/:slug` per UI.md/API.md; Phase 7 retains the original `:surveyId` wording for traceability. See [docs/TODO_STATUS.md](docs/TODO_STATUS.md) for the historical audit and current evidence.
 
@@ -30,7 +30,7 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 
 # Phase 2 — Supabase Project and Database
 
-- [ ] Create a Supabase project.
+- [x] Create a Supabase project.
 - [x] Create the `surveys` table.
 - [x] Create the `questions` table.
 - [x] Create the `choices` table.
@@ -50,13 +50,13 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 
 # Phase 3 — Instructor Authentication
 
-- [ ] Create the instructor login page.
-- [ ] Connect login to Supabase Auth.
-- [ ] Add logout.
-- [ ] Create an authentication context/provider.
-- [ ] Create a protected-route component.
-- [ ] Redirect unauthenticated users to login.
-- [ ] Show the logged-in instructor in the dashboard.
+- [x] Create the instructor login page.
+- [x] Connect login to Supabase Auth.
+- [x] Add logout.
+- [x] Create an authentication context/provider.
+- [x] Create a protected-route component.
+- [x] Redirect unauthenticated users to login.
+- [x] Show the logged-in instructor in the dashboard.
 
 ---
 
@@ -101,10 +101,10 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 
 # Phase 6 — Survey Activation
 
-- [ ] Add activation logic.
-- [ ] Ensure at most one survey is Active.
-- [ ] Automatically close the previously active survey.
-- [ ] Generate a public survey slug or identifier.
+- [x] Add activation logic.
+- [x] Ensure at most one survey is Active.
+- [x] Automatically close the previously active survey.
+- [x] Generate a public survey slug or identifier.
 - [ ] Generate the public survey URL.
 - [ ] Generate a QR code from the public URL.
 - [ ] Create a Present Survey page.
@@ -137,9 +137,9 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 - [ ] Generate an anonymous browser token.
 - [ ] Store the token in local storage.
 - [ ] Save the token with each response.
-- [ ] Prevent the same token from submitting twice to the same survey.
+- [x] Prevent the same token from submitting twice to the same survey.
 - [ ] Show a friendly message if a duplicate submission is attempted.
-- [ ] Add a database uniqueness constraint if appropriate.
+- [x] Add a database uniqueness constraint if appropriate.
 
 ---
 
@@ -206,7 +206,7 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 
 # Phase 14 — Testing
 
-- [ ] Test instructor login.
+- [x] Test instructor login.
 - [ ] Test survey creation.
 - [ ] Test survey editing.
 - [ ] Test activation.
@@ -218,8 +218,8 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 - [ ] Test CSV export.
 - [ ] Test mobile layout.
 - [ ] Test with at least two browsers.
-- [ ] Test unauthorized access attempts.
-- [ ] Test database Row Level Security.
+- [x] Test unauthorized access attempts.
+- [x] Test database Row Level Security.
 
 ---
 

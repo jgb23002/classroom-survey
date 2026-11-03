@@ -32,6 +32,13 @@ The SQL Editor does not automatically add a repository migration to Supabase CLI
 
 4. Confirm the Table Editor contains no synthetic IDs beginning with `10000000-...`. The verification transaction should have rolled them back.
 
+The suite temporarily closes an existing active survey only within its
+uncommitted transaction so it can create a deterministic active fixture. Run it
+during a quiet window: API readers continue to see committed data, but a
+concurrent lifecycle write may wait for the verification transaction. See the
+[remote verification record](REMOTE_DATABASE_VERIFICATION.md) for the cleanup
+query, per-check evidence status, and required real-session follow-up.
+
 This test checks RLS and RPC behavior through database roles. It does not replace a later browser test using real Supabase Auth sessions and the public API key. Run `002_concurrency.sh` only on a disposable local/test project with a direct database connection; do not run load or concurrency fixtures against a classroom production project.
 
 ## 4. Provision the approved instructor

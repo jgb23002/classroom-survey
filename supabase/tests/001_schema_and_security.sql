@@ -5,6 +5,7 @@ begin;
 do $$
 declare
     v_tables text[];
+    v_foreign_keys text[];
 begin
     select array_agg(tablename order by tablename)
       into v_tables
@@ -13,6 +14,31 @@ begin
 
     if v_tables <> array['answers', 'choices', 'questions', 'responses', 'surveys'] then
         raise exception 'Unexpected public tables: %', v_tables;
+    end if;
+
+    select array_agg(
+               format('%s.%s:%s', child.relname, a.attname, c.confdeltype)
+               order by child.relname, a.attname
+           )
+      into v_foreign_keys
+      from pg_catalog.pg_constraint as c
+      join pg_catalog.pg_class as child on child.oid = c.conrelid
+      join pg_catalog.pg_namespace as n on n.oid = child.relnamespace
+      join pg_catalog.pg_attribute as a
+        on a.attrelid = child.oid and a.attnum = c.conkey[1]
+     where n.nspname = 'public'
+       and c.contype = 'f'
+       and child.relname = any(array['questions', 'choices', 'responses', 'answers']);
+
+    if v_foreign_keys <> array[
+        'answers.choice_id:n',
+        'answers.question_id:c',
+        'answers.response_id:c',
+        'choices.question_id:c',
+        'questions.survey_id:c',
+        'responses.survey_id:c'
+    ] then
+        raise exception 'Foreign keys/delete actions differ from specification: %', v_foreign_keys;
     end if;
 
     if exists (
@@ -85,6 +111,24 @@ begin
 end;
 $$;
 
+-- Temporarily close an existing active survey only inside this transaction so
+-- the deterministic active fixture can be created. MVCC keeps the uncommitted
+-- change invisible to API readers, and the final ROLLBACK restores every row.
+-- Run during a quiet window because a concurrent lifecycle write may wait.
+update public.surveys set status = 'closed' where status = 'active';
+
+do $$
+begin
+    begin
+        insert into public.surveys (title, status)
+        values ('Invalid status fixture', 'invalid');
+        raise exception 'Invalid survey status unexpectedly succeeded';
+    exception when check_violation then
+        null;
+    end;
+end;
+$$;
+
 -- Fixed synthetic UUIDs keep failures readable.
 insert into public.surveys (id, title, status, public_slug) values
     ('10000000-0000-4000-8000-000000000001', 'Draft Survey', 'draft', null),
@@ -120,6 +164,42 @@ begin
     begin
         perform count(*) from public.responses;
         raise exception 'Anonymous response read unexpectedly succeeded';
+    exception when insufficient_privilege then
+        null;
+    end;
+
+    begin
+        perform count(*) from public.answers;
+        raise exception 'Anonymous answer read unexpectedly succeeded';
+    exception when insufficient_privilege then
+        null;
+    end;
+
+    begin
+        insert into public.surveys (title) values ('Anonymous forbidden survey');
+        raise exception 'Anonymous survey insert unexpectedly succeeded';
+    exception when insufficient_privilege then
+        null;
+    end;
+
+    begin
+        update public.surveys set title = 'Anonymous forbidden update'
+         where id = '10000000-0000-4000-8000-000000000002';
+        raise exception 'Anonymous survey update unexpectedly succeeded';
+    exception when insufficient_privilege then
+        null;
+    end;
+
+    begin
+        perform public.activate_survey('10000000-0000-4000-8000-000000000001');
+        raise exception 'Anonymous activation unexpectedly succeeded';
+    exception when insufficient_privilege then
+        null;
+    end;
+
+    begin
+        perform public.close_survey('10000000-0000-4000-8000-000000000002');
+        raise exception 'Anonymous closure unexpectedly succeeded';
     exception when insufficient_privilege then
         null;
     end;
@@ -199,6 +279,7 @@ do $$
 declare
     v_before timestamptz;
     v_after timestamptz;
+    v_managed_id uuid;
 begin
     if (select count(*) from public.surveys) <> 3 then
         raise exception 'Instructor cannot read every survey';
@@ -212,6 +293,15 @@ begin
     select updated_at into v_after from public.surveys
      where id = '10000000-0000-4000-8000-000000000001';
     if v_after <= v_before then raise exception 'updated_at trigger failed'; end if;
+
+    insert into public.surveys (title)
+    values ('Instructor management fixture') returning id into v_managed_id;
+    update public.surveys set description = 'Managed by instructor'
+     where id = v_managed_id;
+    delete from public.surveys where id = v_managed_id;
+    if exists (select 1 from public.surveys where id = v_managed_id) then
+        raise exception 'Instructor could not manage a survey';
+    end if;
 end;
 $$;
 reset role;
@@ -242,6 +332,16 @@ begin
         if sqlerrm <> 'INVALID_CHOICE' then raise; end if;
     end;
 
+    begin
+        perform public.submit_survey_response(
+            '10000000-0000-4000-8000-000000000002', 'wrong-question-token',
+            '[{"question_id":"20000000-0000-4000-8000-000000000001","choice_id":"30000000-0000-4000-8000-000000000001"},{"question_id":"20000000-0000-4000-8000-000000000003","choice_id":"30000000-0000-4000-8000-000000000005"}]'::jsonb
+        );
+        raise exception 'Foreign question unexpectedly succeeded';
+    exception when check_violation then
+        if sqlerrm <> 'INVALID_QUESTION' then raise; end if;
+    end;
+
     v_result := public.submit_survey_response(
         '10000000-0000-4000-8000-000000000002', 'valid-browser-token',
         '[{"question_id":"20000000-0000-4000-8000-000000000002","choice_id":"30000000-0000-4000-8000-000000000003"},{"question_id":"20000000-0000-4000-8000-000000000003","choice_id":"30000000-0000-4000-8000-000000000005"}]'::jsonb
@@ -267,7 +367,9 @@ do $$
 begin
     if exists (
         select 1 from public.responses
-         where anonymous_token in ('missing-answer-token', 'wrong-choice-token')
+         where anonymous_token in (
+             'missing-answer-token', 'wrong-choice-token', 'wrong-question-token'
+         )
     ) or (select count(*) from public.responses where anonymous_token = 'valid-browser-token') <> 1
        or (select count(*) from public.answers) <> 2 then
         raise exception 'Submission atomicity or answer insert count failed';

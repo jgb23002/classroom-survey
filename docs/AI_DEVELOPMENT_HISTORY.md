@@ -37,6 +37,22 @@ Use: concise record of prompts, changes, verification and problems for the assig
 - **Progress:** Checked the ten Phase 2 implementation tasks supported by the locally applied migration. Left Supabase project creation and four remote access-verification tasks unchecked. The original TODO snapshot remains unchanged.
 - **Limits/manual work:** No remote Supabase project/schema/Auth/API was changed or verified. The owner must follow `docs/SUPABASE_SETUP.md`, run the migration and rollback-safe verification in SQL Editor, configure Auth and provision the trusted claim before remote completion can be recorded. No secret/service-role key was added.
 
+## 2026-11-03 — Phase 3: instructor authentication repair
+
+- **Prompt/scope:** Diagnose the permanently disabled login despite configured Vite/Supabase values; implement email/password login, trusted instructor authorization, protected routes, session restoration, logout, password reset/invitation handling and tests without changing database security.
+- **Files/behavior changed:** Replaced the Phase 1 disabled login scaffold with real Supabase Auth. Added the auth service/types/context/provider/hook, instructor route guard, callback and password-setting pages; protected all instructor routes; added identity/logout to the instructor layout and dashboard; retained `app_metadata.role = instructor`; updated browser/unit tests and setup documentation. No database migration or policy changed, and `.env` values were neither printed nor committed.
+- **Validation performed and outcomes:** Sanitized configuration inspection confirmed both expected variables, a valid HTTPS origin, a new-format publishable key, no legacy anon JWT and no secret key. A read-only Auth settings request returned HTTP 200 with email enabled and anonymous Auth disabled. TypeScript, lint, production build and 24 unit tests passed. Intercepted browser tests verified authorized login, persistent refresh, logout, password-reset redirect, ordinary-user denial and protected-route redirects on desktop/mobile; no real passwords were used.
+- **Problems, limits and manual checks remaining:** The root cause was unconditional placeholder UI—not environment naming. Live login could not be attempted without the user's password. The owner must configure allowed callback URLs, confirm the Auth user has trusted instructor metadata, sign out/in for a fresh JWT, and perform the documented live login/recovery/invitation checks. RLS remains the server-side authority and was not modified.
+- **Next bounded phase:** Verify the actual instructor session against Supabase, then implement the database-backed survey dashboard in a separate phase.
+
+## 2026-11-03 — Full-project completion audit
+
+- **Prompt/scope:** Inspect specifications, roadmap, documentation, frontend, Supabase migration and tests; reconcile verified completion; prioritize the shortest instructor-to-student-to-results workflow without implementing new features.
+- **Files/behavior changed:** Updated only the evidence checklist and status/history documents. Credited the reachable Supabase project, completed authentication, locally tested lifecycle/slug invariants and database duplicate-token enforcement. No application, migration, policy or dependency changed.
+- **Validation performed and outcomes:** Inspected every tracked project file and all route/service/database test implementations. Existing evidence records successful format, TypeScript, unit, lint, build, desktop/mobile auth browser and disposable PostgreSQL security/concurrency checks. Survey dashboard/editor/presentation/student/results files remain explicit placeholders with no survey data services.
+- **Problems, limits and manual checks remaining:** The remote SQL/RLS suite and real role-specific client tests remain unrun. The reported remote migration application and reachable Auth endpoint do not prove hosted policy behavior. No end-to-end survey workflow, second browser engine, load test, GitHub/Cloudflare deployment or production test exists.
+- **Next bounded phase:** Implement a transactional instructor draft-save operation and a real create/edit survey form for multiple-choice and true/false questions, with service/types and focused tests.
+
 ## Later phase entry format
 
 - **Prompt/scope:**

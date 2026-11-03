@@ -1,9 +1,18 @@
-import { NavLink, Outlet } from 'react-router';
+import { NavLink, Outlet, useNavigate } from 'react-router';
 import { Brand } from '../Brand';
-import { LinkButton } from '../Button';
+import { Button } from '../Button';
 import { SkipLink } from '../SkipLink';
+import { useAuth } from '../../hooks/useAuth';
 
 export function InstructorLayout() {
+  const auth = useAuth();
+  const navigate = useNavigate();
+
+  async function handleLogout() {
+    await auth.signOut();
+    navigate('/login', { replace: true });
+  }
+
   return (
     <div className="min-h-dvh">
       <SkipLink />
@@ -14,9 +23,10 @@ export function InstructorLayout() {
             <NavLink to="/dashboard" className="text-link">
               Dashboard
             </NavLink>
-            <LinkButton to="/login" variant="secondary">
-              Instructor login
-            </LinkButton>
+            <span className="hidden text-sm text-muted sm:inline">{auth.user?.email}</span>
+            <Button variant="secondary" onClick={handleLogout}>
+              Log out
+            </Button>
           </nav>
         </div>
       </header>

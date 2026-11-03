@@ -12,6 +12,9 @@ import { PresentSurveyPage } from './pages/PresentSurveyPage';
 import { ResultsPage } from './pages/ResultsPage';
 import { StudentSurveyPage } from './pages/StudentSurveyPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { AuthCallbackPage } from './pages/AuthCallbackPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
+import { RequireInstructor } from './components/RequireInstructor';
 
 export function App() {
   return (
@@ -21,14 +24,18 @@ export function App() {
         <Route element={<SiteLayout />}>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
-        <Route element={<InstructorLayout />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/surveys/new" element={<NewSurveyPage />} />
-          <Route path="/surveys/:id/edit" element={<EditSurveyPage />} />
-          <Route path="/surveys/:id/present" element={<PresentSurveyPage />} />
-          <Route path="/surveys/:id/results" element={<ResultsPage />} />
+        <Route element={<RequireInstructor />}>
+          <Route element={<InstructorLayout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/surveys/new" element={<NewSurveyPage />} />
+            <Route path="/surveys/:id/edit" element={<EditSurveyPage />} />
+            <Route path="/surveys/:id/present" element={<PresentSurveyPage />} />
+            <Route path="/surveys/:id/results" element={<ResultsPage />} />
+          </Route>
         </Route>
         <Route element={<StudentLayout />}>
           <Route path="/s/:slug" element={<StudentSurveyPage />} />

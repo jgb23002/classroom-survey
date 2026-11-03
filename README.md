@@ -87,7 +87,14 @@ tests/e2e/           Browser foundation checks
 docs/                Plan, decisions, progress, history and evidence
 ```
 
-`getSupabaseClient()` retains normal instructor Auth behavior for later integration. `getPublicSupabaseClient()` is separate and disables session persistence, token refresh and URL-session detection, so student participation does not restore an instructor session. Both initialize on demand and throw clear configuration errors before making a backend request. Database types will be generated from the actual schema in the database phase.
+`getSupabaseClient()` provides persistent instructor Auth sessions. The auth provider restores sessions, subscribes to Auth changes, requires the trusted `app_metadata.role = instructor` claim, protects every instructor route, and supports logout and password recovery. `/auth/callback` handles Supabase recovery/invitation redirects and `/reset-password` updates an authorized instructor password. `getPublicSupabaseClient()` remains isolated and disables session persistence, refresh and URL-session detection, so student participation never restores an instructor session. Both clients accept only the project URL and public `sb_publishable_…` key and never require a secret/service-role key.
+
+For local Auth redirects, add these URLs in **Supabase Dashboard → Authentication → URL Configuration**:
+
+- `http://localhost:5173/auth/callback`
+- `http://localhost:5173/auth/callback?next=/reset-password`
+
+Use the second URL when sending an instructor invitation so the invited user can choose a password. Production deployments need equivalent HTTPS callback URLs.
 
 ## Deployment and remaining setup
 
