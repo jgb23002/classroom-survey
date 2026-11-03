@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseClient } from '../lib/supabase';
 import { isSurveyStatus, type SurveySummary } from '../types/survey';
+import type { LoadedSurveyEditor, SavedSurvey, SurveyEditorValue } from '../types/surveyEditor';
 
 export class SurveyServiceError extends Error {
   constructor(message: string) {
@@ -29,6 +30,22 @@ interface SurveyGraph {
     question_type: 'multiple_choice' | 'true_false';
     position: number;
     choices: Array<{ choice_text: string; position: number }>;
+  }>;
+}
+
+interface EditorSurveyRow {
+  id: string;
+  title: string;
+  description: string | null;
+  status: unknown;
+  updated_at: string;
+  responses: { count: number }[] | null;
+  questions: Array<{
+    id: string;
+    question_text: string;
+    question_type: 'multiple_choice' | 'true_false';
+    position: number;
+    choices: Array<{ id: string; choice_text: string; position: number }>;
   }>;
 }
 
@@ -148,4 +165,86 @@ export async function duplicateSurvey(
     await supabase.from('surveys').delete().eq('id', copy.id);
     throw new SurveyServiceError(message('duplicated'));
   }
+}
+
+export async function loadSurveyEditor(
+  id: string,
+  supabase: SupabaseClient = client(),
+): Promise<LoadedSurveyEditor> {
+  const { data, error } = await supabase
+    .from('surveys')
+    .select(
+      'id,title,description,status,updated_at,responses(count),questions(id,question_text,question_type,position,choices(id,choice_text,position))',
+    )
+    .eq('id', id)
+    .order('position', { referencedTable: 'questions', ascending: true })
+    .order('position', { referencedTable: 'questions.choices', ascending: true })
+    .single();
+  if (error || !data) throw new SurveyServiceError('The survey could not be loaded.');
+
+  const row = data as unknown as EditorSurveyRow;
+  if (!isSurveyStatus(row.status))
+    throw new SurveyServiceError('The survey has an invalid status.');
+  return {
+    id: row.id,
+    status: row.status,
+    updatedAt: row.updated_at,
+    responseCount: row.responses?.[0]?.count ?? 0,
+    value: {
+      title: row.title,
+      description: row.description ?? '',
+      questions: row.questions.map((question) => ({
+        id: question.id,
+        text: question.question_text,
+        type: question.question_type,
+        choices: question.choices.map((choice) => ({ id: choice.id, text: choice.choice_text })),
+      })),
+    },
+  };
+}
+
+function saveError(rawMessage: string): string {
+  if (rawMessage.includes('SURVEY_EDIT_CONFLICT'))
+    return 'This survey changed in another tab. Reload before saving again.';
+  if (rawMessage.includes('SURVEY_ACTIVE')) return 'Close this active survey before editing it.';
+  if (rawMessage.includes('SURVEY_ARCHIVED')) return 'Archived surveys cannot be edited.';
+  if (rawMessage.includes('SURVEY_HAS_RESPONSES'))
+    return 'This survey has responses and its content is locked. Duplicate it to make changes.';
+  return 'The survey could not be saved. Your edits are still here; please try again.';
+}
+
+export async function saveSurveyDraft(
+  surveyId: string | null,
+  expectedUpdatedAt: string | null,
+  value: SurveyEditorValue,
+  supabase: SupabaseClient = client(),
+): Promise<SavedSurvey> {
+  const questions = value.questions.map((question, questionIndex) => ({
+    id: question.id,
+    question_text: question.text,
+    question_type: question.type,
+    position: questionIndex + 1,
+    choices: question.choices.map((choice, choiceIndex) => ({
+      id: choice.id,
+      choice_text: choice.text,
+      position: choiceIndex + 1,
+    })),
+  }));
+  const { data, error } = await supabase.rpc('save_survey', {
+    p_survey_id: surveyId,
+    p_expected_updated_at: expectedUpdatedAt,
+    p_title: value.title,
+    p_description: value.description,
+    p_questions: questions,
+  });
+  if (error || !data) throw new SurveyServiceError(saveError(error?.message ?? ''));
+  const result = data as { id?: unknown; status?: unknown; updated_at?: unknown };
+  if (
+    typeof result.id !== 'string' ||
+    result.status !== 'draft' ||
+    typeof result.updated_at !== 'string'
+  ) {
+    throw new SurveyServiceError('The database returned an invalid save result.');
+  }
+  return { id: result.id, status: 'draft', updatedAt: result.updated_at };
 }

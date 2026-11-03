@@ -1,12 +1,10 @@
-import { FeaturePlaceholder } from '../components/FeaturePlaceholder';
+import { Navigate, useParams } from 'react-router';
+import { SurveyEditor } from '../components/SurveyEditor';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 export function EditSurveyPage() {
   usePageTitle('Edit survey');
-  return (
-    <FeaturePlaceholder
-      title="Edit survey"
-      description="Adjust questions and choice order in one place. Survey editing will be available when your instructor workspace is ready."
-    />
-  );
+  const { id } = useParams();
+  if (!id) return <Navigate to="/dashboard" replace />;
+  return <SurveyEditor initialSurveyId={id} />;
 }

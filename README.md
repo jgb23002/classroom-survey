@@ -58,14 +58,14 @@ The browser tests require Playwright Chromium. If it is not installed, run `npx 
 | `/`                    | Landing page                                                      |
 | `/login`               | Supabase email/password instructor login                          |
 | `/dashboard`           | Protected, database-backed instructor dashboard                   |
-| `/surveys/new`         | New-survey placeholder; Phase 5 dependency                        |
-| `/surveys/:id/edit`    | Survey-editor placeholder; Phase 5 dependency                     |
+| `/surveys/new`         | Create and atomically save a draft survey                         |
+| `/surveys/:id/edit`    | Load and atomically edit an eligible draft/closed survey          |
 | `/surveys/:id/present` | Presentation placeholder; Phase 6 dependency                      |
 | `/surveys/:id/results` | Results placeholder; Phase 9 dependency                           |
 | `/s/:slug`             | Minimal public student placeholder, with no instructor navigation |
 | Any unmatched path     | Application not-found page                                        |
 
-The dashboard lists real surveys newest-first, counts responses, filters by title/status and uses state-aware actions. Activation/closure use secure RPCs; duplication, archive and deletion use instructor-authorized Supabase operations. Delete confirmations warn about cascading response loss. The editor, QR and results routes remain clearly identified later-phase dependencies.
+The dashboard lists real surveys newest-first, counts responses, filters by title/status and uses state-aware actions. Activation/closure use secure RPCs; duplication, archive and deletion use instructor-authorized Supabase operations. Delete confirmations warn about cascading response loss. The editor uses stable client UUIDs and `save_survey` to atomically persist metadata, questions, choices, deletes and ordering with stale-tab and historical-data protection. QR and results remain later-phase dependencies.
 
 ## Source layout
 

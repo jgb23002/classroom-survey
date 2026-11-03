@@ -242,6 +242,134 @@ test('dashboard shows loading, error retry, and empty states', async ({ page }) 
   await expect(page.getByRole('heading', { name: 'No surveys yet' })).toBeVisible();
 });
 
+async function signInThenOpen(page: import('@playwright/test').Page, path: string) {
+  await page.route('**/auth/v1/token?grant_type=password', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(authResponse('instructor')),
+    });
+  });
+  await page.route('**/rest/v1/surveys*', async (route) => {
+    if (route.request().url().includes('public_slug')) {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+    } else {
+      await route.fallback();
+    }
+  });
+  await page.goto('/login');
+  await page.getByLabel('Email', { exact: true }).fill('instructor@example.test');
+  await page.getByLabel('Password', { exact: true }).fill('synthetic-password');
+  await page.getByRole('button', { name: 'Log in', exact: true }).click();
+  await expect(page).toHaveURL('/dashboard');
+  await page.goto(path);
+}
+
+test('survey editor validates activation and maintains true/false choices', async ({ page }) => {
+  await signInThenOpen(page, '/surveys/new');
+  await page.getByRole('button', { name: 'Save and activate' }).click();
+  await expect(page.getByText('Enter a survey title.')).toBeVisible();
+  await expect(page.getByText('Add at least one question before activation.')).toBeVisible();
+
+  await page.getByLabel('Survey title').fill('Recursion check');
+  await page.getByRole('button', { name: 'Add question' }).click();
+  await page.getByLabel('Question text').fill('Is a base case required?');
+  await page.getByLabel('Question type').selectOption('true_false');
+  await expect(page.getByLabel('Choice 1')).toHaveValue('True');
+  await expect(page.getByLabel('Choice 2')).toHaveValue('False');
+  await expect(page.getByLabel('Choice 1')).toHaveAttribute('readonly', '');
+});
+
+test('survey editor sends one ordered atomic save payload and reloads the draft', async ({
+  page,
+}) => {
+  const surveyId = '10000000-0000-4000-8000-000000000050';
+  let saveBody: Record<string, unknown> | undefined;
+  await page.route('**/rest/v1/rpc/save_survey', async (route) => {
+    saveBody = route.request().postDataJSON() as Record<string, unknown>;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: surveyId,
+        status: 'draft',
+        updated_at: '2026-11-03T20:00:00.000Z',
+      }),
+    });
+  });
+  await page.route(
+    '**/rest/v1/surveys?select=id%2Ctitle%2Cdescription%2Cstatus%2Cupdated_at*',
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/vnd.pgrst.object+json',
+        body: JSON.stringify({
+          id: surveyId,
+          title: 'Ordered choices',
+          description: null,
+          status: 'draft',
+          updated_at: '2026-11-03T20:00:00.000Z',
+          responses: [{ count: 0 }],
+          questions: [],
+        }),
+      });
+    },
+  );
+  await signInThenOpen(page, '/surveys/new');
+  await page.getByLabel('Survey title').fill('  Ordered choices  ');
+  await page.getByRole('button', { name: 'Add question' }).click();
+  await page.getByLabel('Question text').fill('Pick one');
+  await page.getByLabel('Choice 1').fill('First');
+  await page.getByLabel('Choice 2').fill('Second');
+  await page.getByRole('button', { name: 'Down', exact: true }).first().click();
+  await page.getByRole('button', { name: 'Save draft' }).click();
+
+  await expect(page).toHaveURL(`/surveys/${surveyId}/edit`);
+  expect(saveBody?.p_title).toBe('Ordered choices');
+  const questions = saveBody?.p_questions as Array<{
+    position: number;
+    choices: Array<{ choice_text: string; position: number }>;
+  }>;
+  expect(questions[0]?.position).toBe(1);
+  expect(questions[0]?.choices).toEqual([
+    expect.objectContaining({ choice_text: 'Second', position: 1 }),
+    expect.objectContaining({ choice_text: 'First', position: 2 }),
+  ]);
+});
+
+test('survey editor warns before discarding edits and locks active surveys', async ({ page }) => {
+  await signInThenOpen(page, '/surveys/new');
+  await page.getByLabel('Survey title').fill('Unsaved title');
+  page.once('dialog', async (dialog) => {
+    expect(dialog.message()).toContain('Discard your unsaved');
+    await dialog.dismiss();
+  });
+  await page.getByRole('link', { name: 'Dashboard' }).click();
+  await expect(page).toHaveURL('/surveys/new');
+
+  await page.route(
+    '**/rest/v1/surveys?select=id%2Ctitle%2Cdescription%2Cstatus%2Cupdated_at*',
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/vnd.pgrst.object+json',
+        body: JSON.stringify({
+          id: '10000000-0000-4000-8000-000000000060',
+          title: 'Active locked survey',
+          description: null,
+          status: 'active',
+          updated_at: '2026-11-03T20:00:00.000Z',
+          responses: [{ count: 0 }],
+          questions: [],
+        }),
+      });
+    },
+  );
+  await page.goto('/surveys/10000000-0000-4000-8000-000000000060/edit');
+  await expect(page.getByRole('heading', { name: 'Survey editing is locked' })).toBeVisible();
+  await expect(page.getByText('Close this active survey before editing it.')).toBeVisible();
+});
+
 const routes = [
   ['/dashboard', 'Dashboard'],
   ['/surveys/new', 'New survey'],

@@ -41,7 +41,17 @@ query, per-check evidence status, and required real-session follow-up.
 
 This test checks RLS and RPC behavior through database roles. It does not replace a later browser test using real Supabase Auth sessions and the public API key. Run `002_concurrency.sh` only on a disposable local/test project with a direct database connection; do not run load or concurrency fixtures against a classroom production project.
 
-## 4. Provision the approved instructor
+## 4. Apply and verify the Phase 5 editor migration
+
+After the initial migration is present, run the complete
+[`202611030002_atomic_survey_editor.sql`](../supabase/migrations/202611030002_atomic_survey_editor.sql)
+file once in SQL Editor. It adds only the instructor-authorized `save_survey`
+RPC; it does not replace tables, policies, or existing data. Then run
+[`003_editor.sql`](../supabase/tests/003_editor.sql) and require its final
+`PASS` result. The verification is transaction-wrapped and rolls back its
+synthetic survey.
+
+## 5. Provision the approved instructor
 
 The application does not treat every signed-in user as an instructor. RLS and privileged RPCs require both a real Supabase Auth user ID and the trusted server-managed claim `app_metadata.role = instructor`.
 
@@ -70,7 +80,7 @@ update auth.users
 
 Never authorize from `user_metadata`, an email string, a frontend environment variable, or the generic `authenticated` role.
 
-## 5. Record the remote result before checking TODO verification tasks
+## 6. Record the remote result before checking TODO verification tasks
 
 Only after the remote migration and verification succeed should these TODO items be checked:
 

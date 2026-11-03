@@ -199,9 +199,8 @@ export function DashboardPage() {
       </div>
 
       <p className="mt-5 rounded-xl border border-brand-100 bg-brand-50 p-4 text-sm leading-6 text-brand-900">
-        Survey creation/editing, QR presentation, and results screens are delivered in later phases.
-        Their dashboard links open the prepared protected routes; lifecycle, duplication, archive,
-        and delete actions here use Supabase now.
+        Survey creation and eligible draft editing are available now. QR presentation and results
+        screens are delivered in later phases; those links open prepared protected routes.
       </p>
 
       {mutationError && (

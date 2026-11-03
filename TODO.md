@@ -8,7 +8,7 @@ This roadmap breaks the implementation into small, testable phases ordered from 
 
 ## Progress evidence — 2026-11-03
 
-Phase 1, the local Phase 2 database implementation, Phase 3 instructor authentication, and Phase 4 instructor dashboard are complete. The protected dashboard reads real Supabase survey data and provides responsive filtering plus state-aware lifecycle, duplicate, archive, and delete actions. Editor, QR presentation, and results links explicitly lead to later-phase placeholders. A configured Supabase Auth endpoint was reached successfully and the migration was reported as manually applied, but rollback-safe remote SQL/RLS and real role-specific client verification remain pending. Evidence is recorded in [docs/PHASE_1_REPORT.md](docs/PHASE_1_REPORT.md), [docs/PHASE_2_REPORT.md](docs/PHASE_2_REPORT.md), [docs/REMOTE_DATABASE_VERIFICATION.md](docs/REMOTE_DATABASE_VERIFICATION.md), and [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md).
+Phases 1–5 are implemented and verified locally. The protected dashboard reads real Supabase survey data, and the survey editor creates/loads drafts with stable question/choice IDs through an atomic save RPC. Active, archived, and closed-with-responses content is protected from editing. QR presentation and results remain later-phase placeholders. The initial migration was reported as manually applied, but the new Phase 5 migration, rollback-safe remote SQL/RLS suite, and real role-specific client verification remain manual. Evidence is recorded in [docs/PHASE_1_REPORT.md](docs/PHASE_1_REPORT.md), [docs/PHASE_2_REPORT.md](docs/PHASE_2_REPORT.md), [docs/REMOTE_DATABASE_VERIFICATION.md](docs/REMOTE_DATABASE_VERIFICATION.md), and [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md).
 
 The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TODO_ORIGINAL.md). The public route is `/s/:slug` per UI.md/API.md; Phase 7 retains the original `:surveyId` wording for traceability. See [docs/TODO_STATUS.md](docs/TODO_STATUS.md) for the historical audit and current evidence.
 
@@ -81,21 +81,21 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 
 # Phase 5 — Survey Editor
 
-- [ ] Create a survey editor page.
-- [ ] Add survey title field.
-- [ ] Add optional description field.
-- [ ] Add questions dynamically.
-- [ ] Support Multiple Choice questions.
-- [ ] Support True / False questions.
-- [ ] Add answer choices dynamically.
-- [ ] Reorder questions.
-- [ ] Reorder choices.
-- [ ] Delete questions.
-- [ ] Delete choices.
-- [ ] Validate required fields.
-- [ ] Save a survey as Draft.
-- [ ] Load an existing survey for editing.
-- [ ] Prevent editing an active survey unless it is first closed.
+- [x] Create a survey editor page.
+- [x] Add survey title field.
+- [x] Add optional description field.
+- [x] Add questions dynamically.
+- [x] Support Multiple Choice questions.
+- [x] Support True / False questions.
+- [x] Add answer choices dynamically.
+- [x] Reorder questions.
+- [x] Reorder choices.
+- [x] Delete questions.
+- [x] Delete choices.
+- [x] Validate required fields.
+- [x] Save a survey as Draft.
+- [x] Load an existing survey for editing.
+- [x] Prevent editing an active survey unless it is first closed.
 
 ---
 

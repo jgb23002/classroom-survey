@@ -61,6 +61,14 @@ Use: concise record of prompts, changes, verification and problems for the assig
 - **Problems, limits and manual checks remaining:** Browser Supabase calls used intercepted protocol-faithful responses; the real hosted dashboard was not exercised without the user's Auth credentials. New/Edit, QR presentation and results pages remain later-phase placeholders. Application-level duplication is permitted by API.md but is not a single database transaction; a future mutation RPC can strengthen it before high-risk production use.
 - **Next bounded phase:** Implement the transactional survey editor/save workflow so New and Edit become functional and activation can be exercised end to end.
 
+## 2026-11-03 — Phase 5: survey creation and editing
+
+- **Prompt/scope:** Implement protected new/edit survey routes with title/description, dynamic multiple-choice and True/False questions, stable IDs, choice/question ordering/deletion, validation, drafts, activation, unsaved-change protection and persistent relational writes without damaging responses.
+- **Files/behavior changed:** Added the atomic `save_survey` migration and rollback-safe editor test; updated the disposable migration runner. Added shared editor UI, editor types/validation/normalization utilities and Supabase load/save service operations. Replaced both placeholders, documented immutable-history rules and updated roadmap/setup documentation.
+- **Validation performed and outcomes:** Fresh PostgreSQL suite passed atomic create, update, reorder, deletion, stale-tab rejection, closed-with-responses rejection, prior RLS/integrity and lifecycle concurrency tests. Formatting, strict TypeScript, ESLint and production build passed. Unit suite reached 31 passing tests. Desktop/mobile browser tests passed editor validation, automatic True/False choices, ordered atomic payload and reload, unsaved-change warning and active-survey lock using intercepted Supabase protocol responses.
+- **Problems, limits and manual checks remaining:** An initial empty-`search_path` constraint lookup failed and was fixed by schema-qualifying deferred constraints. A browser test initially selected disabled “Move down” instead of exact “Down”; the selector was corrected. The new migration is not applied remotely, so hosted saves are not yet verified. Presentation/results remain placeholders.
+- **Next bounded phase:** Apply and verify the editor migration remotely, then implement the QR presentation page and public student survey workflow.
+
 ## Later phase entry format
 
 - **Prompt/scope:**
