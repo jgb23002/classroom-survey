@@ -8,7 +8,7 @@ This roadmap breaks the implementation into small, testable phases ordered from 
 
 ## Progress evidence — 2026-11-03
 
-Phases 1–7 are implemented and verified locally. The protected dashboard reads real Supabase survey data, the survey editor persists stable question/choice IDs through an atomic save RPC, the presentation page provides an origin-derived QR workflow, and the isolated public client loads active content and submits complete anonymous responses only through secured RPCs. Active, archived, and closed-with-responses content is protected from editing. Results remain a later phase. The initial migration was reported as manually applied, but the Phase 5 migration, rollback-safe remote SQL/RLS suite, real role-specific client verification, deployed QR scan, and hosted instructor-to-student workflow remain manual. Evidence is recorded in [docs/PHASE_1_REPORT.md](docs/PHASE_1_REPORT.md), [docs/PHASE_2_REPORT.md](docs/PHASE_2_REPORT.md), [docs/REMOTE_DATABASE_VERIFICATION.md](docs/REMOTE_DATABASE_VERIFICATION.md), and [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md).
+Phases 1–9 are implemented and verified locally. Protected instructor routes now cover survey management, QR presentation and database-aggregated results; the isolated public client loads active content and submits anonymous responses only through secured RPCs. Results include accessible charts, exact counts, per-question percentages, unanswered indicators, refresh and a token-free CSV export. The initial migration was reported as manually applied, but migrations 002–004, remote SQL/RLS verification, real role-specific client checks, deployed QR scan, and the hosted end-to-end workflow remain manual. Evidence is recorded in [docs/PHASE_1_REPORT.md](docs/PHASE_1_REPORT.md), [docs/PHASE_2_REPORT.md](docs/PHASE_2_REPORT.md), [docs/REMOTE_DATABASE_VERIFICATION.md](docs/REMOTE_DATABASE_VERIFICATION.md), and [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md).
 
 The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TODO_ORIGINAL.md). The public route is `/s/:slug` per UI.md/API.md; Phase 7 retains the original `:surveyId` wording for traceability. See [docs/TODO_STATUS.md](docs/TODO_STATUS.md) for the historical audit and current evidence.
 
@@ -145,21 +145,21 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 
 # Phase 9 — Results Dashboard
 
-- [ ] Create a results page for each survey.
-- [ ] Show total response count.
-- [ ] Aggregate answers by question.
-- [ ] Show counts for each choice.
-- [ ] Show percentages for each choice.
-- [ ] Add bar charts using Recharts.
-- [ ] Clearly label unanswered questions.
-- [ ] Add Refresh Results button.
-- [ ] Add link back to the main dashboard.
+- [x] Create a results page for each survey.
+- [x] Show total response count.
+- [x] Aggregate answers by question.
+- [x] Show counts for each choice.
+- [x] Show percentages for each choice.
+- [x] Add bar charts using Recharts.
+- [x] Clearly label unanswered questions.
+- [x] Add Refresh Results button.
+- [x] Add link back to the main dashboard.
 
 ---
 
 # Phase 10 — Historical Results
 
-- [ ] Allow viewing results for Closed surveys.
+- [x] Allow viewing results for Closed surveys.
 - [ ] Allow viewing results for Archived surveys.
 - [ ] Add filtering by date.
 - [ ] Add filtering by survey title.
@@ -169,12 +169,12 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 
 # Phase 11 — CSV Export
 
-- [ ] Add Export CSV button.
-- [ ] Export survey metadata.
-- [ ] Export one row per response.
-- [ ] Include submission timestamp.
-- [ ] Include each question and answer.
-- [ ] Create safe CSV escaping.
+- [x] Add Export CSV button.
+- [x] Export survey metadata.
+- [x] Export one row per response.
+- [x] Include submission timestamp.
+- [x] Include each question and answer.
+- [x] Create safe CSV escaping.
 - [ ] Test export with spreadsheet applications.
 
 ---
@@ -214,8 +214,8 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 - [ ] Test QR-code links.
 - [x] Test student submissions.
 - [x] Test duplicate-submission prevention.
-- [ ] Test results calculations.
-- [ ] Test CSV export.
+- [x] Test results calculations.
+- [x] Test CSV export.
 - [x] Test mobile layout.
 - [ ] Test with at least two browsers.
 - [x] Test unauthorized access attempts.

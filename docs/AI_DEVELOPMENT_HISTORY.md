@@ -101,6 +101,14 @@ Use: concise record of prompts, changes, verification and problems for the assig
 - **Problems, limits and manual checks remaining:** No remote migration or hosted anonymous concurrency test was executed. Tokens prevent accidental repeats, not deliberate voting from cleared storage, another browser, or another device. Apply migration 003 remotely before relying on strict token validation.
 - **Next bounded phase:** Apply and verify pending migrations on Supabase, then implement instructor-only results aggregation and charts.
 
+## 2026-11-03 — Phase 9: instructor results dashboard
+
+- **Prompt/scope:** Implement protected real-data survey results with total and per-choice counts, answered-denominator percentages, zero/unanswered states, accessible Recharts visualization, refresh, export/presentation/dashboard actions, responsive behavior and tests.
+- **Files/behavior changed:** Added migration `202611030004` with instructor-only aggregate and token-free export RPCs plus rollback-safe SQL verification. Replaced the results placeholder with a protected responsive page, lazy-loaded chart, typed service/parser and percentage/CSV utilities. Export produces metadata and one ordered row per response without browser tokens; no public result query was added.
+- **Validation performed and outcomes:** Disposable PostgreSQL denied anonymous and ordinary-user results/export calls and passed three-response aggregation with a zero-count choice, one unanswered response and token-free export. Unit suite reached 54 tests, covering denominators, zero responses, incomplete data, rounding, escaping and formula neutralization. The rebuilt bundle passed 40 desktop/mobile Chromium tests, including zero state, Refresh, unanswered/count/percentage text, accessible chart, CSV download and action URLs. TypeScript, ESLint, formatting and build passed. Recharts moved to a separate lazy chunk; the main bundle retains the existing non-failing size warning.
+- **Problems, limits and manual checks remaining:** Browser Supabase responses were intercepted and no remote migration was applied. Spreadsheet application compatibility, high-volume/paginated CSV, archived-result viewing, hosted authorization and production counts remain unverified and were not marked complete.
+- **Next bounded phase:** Apply/verify migrations 002–004 remotely, then implement historical result filters or complete Phase 11 spreadsheet verification.
+
 ## Later phase entry format
 
 - **Prompt/scope:**

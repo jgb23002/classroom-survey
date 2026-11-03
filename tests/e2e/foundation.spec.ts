@@ -439,6 +439,128 @@ test('presentation generates the production URL QR, copies, downloads PNG, and c
   await expect(page.getByText('New submissions are no longer accepted.')).toBeVisible();
 });
 
+test('instructor results show zero, refresh aggregates, charts, and export CSV', async ({
+  page,
+}) => {
+  const surveyId = '10000000-0000-4000-8000-000000000090';
+  let resultRequests = 0;
+  const resultPayload = (populated: boolean) => ({
+    survey: {
+      id: surveyId,
+      title: 'Recursion Results',
+      description: 'Class understanding check',
+      status: 'closed',
+      public_slug: 'recursion-results',
+      created_at: '2026-11-03T12:00:00.000Z',
+    },
+    response_count: populated ? 3 : 0,
+    questions: [
+      {
+        id: '20000000-0000-4000-8000-000000000091',
+        question_text: 'What is required for recursion?',
+        position: 1,
+        answered_count: populated ? 2 : 0,
+        unanswered_count: populated ? 1 : 0,
+        choices: [
+          {
+            id: '30000000-0000-4000-8000-000000000091',
+            choice_text: 'A base case',
+            position: 1,
+            count: populated ? 2 : 0,
+          },
+          {
+            id: '30000000-0000-4000-8000-000000000092',
+            choice_text: 'A pointer',
+            position: 2,
+            count: 0,
+          },
+        ],
+      },
+    ],
+  });
+  await page.route('**/rest/v1/surveys*', async (route) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+  });
+  await page.route('**/rest/v1/rpc/get_survey_results', async (route) => {
+    resultRequests += 1;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(resultPayload(resultRequests > 1)),
+    });
+  });
+  await page.route('**/rest/v1/rpc/export_survey_responses', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        survey: {
+          id: surveyId,
+          title: 'Recursion Results',
+          description: 'Class understanding check',
+          status: 'closed',
+          created_at: '2026-11-03T12:00:00.000Z',
+        },
+        questions: [
+          {
+            id: '20000000-0000-4000-8000-000000000091',
+            question_text: 'What is required for recursion?',
+            position: 1,
+          },
+        ],
+        responses: [
+          {
+            id: '40000000-0000-4000-8000-000000000091',
+            submitted_at: '2026-11-03T12:01:00.000Z',
+            answers: [
+              {
+                question_id: '20000000-0000-4000-8000-000000000091',
+                answer: 'A base case',
+              },
+            ],
+          },
+        ],
+      }),
+    });
+  });
+  await openAuthenticatedDashboard(page);
+  await page.goto(`/surveys/${surveyId}/results`);
+
+  await expect(page.getByRole('heading', { name: 'Recursion Results' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'No responses yet' })).toBeVisible();
+  await expect(page.getByRole('listitem').filter({ hasText: 'A pointer' })).toContainText(
+    '0 · 0.0%',
+  );
+
+  await page.getByRole('button', { name: 'Refresh results' }).click();
+  await expect(page.getByText('1 unanswered')).toBeVisible();
+  await expect(page.getByRole('listitem').filter({ hasText: 'A base case' })).toContainText(
+    '2 · 100.0%',
+  );
+  await expect(page.getByRole('img', { name: /Bar chart for What is required/ })).toBeVisible();
+  await expect(page.getByText('Results refreshed.')).toBeVisible();
+
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export CSV' }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe('recursion-results-results.csv');
+  const stream = await download.createReadStream();
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) chunks.push(Buffer.from(chunk));
+  const csv = Buffer.concat(chunks).toString('utf8');
+  expect(csv).toContain('survey_metadata');
+  expect(csv).toContain('A base case');
+  expect(csv).not.toContain('anonymous_token');
+  await expect(page.getByRole('link', { name: 'Present QR' })).toHaveAttribute(
+    'href',
+    `/surveys/${surveyId}/present`,
+  );
+  await expect(page.getByRole('link', { name: 'Back to dashboard' })).toHaveAttribute(
+    'href',
+    '/dashboard',
+  );
+});
+
 const routes = [
   ['/dashboard', 'Dashboard'],
   ['/surveys/new', 'New survey'],

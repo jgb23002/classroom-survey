@@ -72,7 +72,22 @@ Null, empty, whitespace, malformed, and non-v4 values return
 `INVALID_ANONYMOUS_TOKEN`. Run `notify pgrst, 'reload schema';` after the
 migration if the REST API temporarily reports a missing function.
 
-## 6. Provision the approved instructor
+## 6. Apply the Phase 9 results migration
+
+Run the complete
+[`202611030004_instructor_results.sql`](../supabase/migrations/202611030004_instructor_results.sql)
+file once after migrations 002 and 003. It adds `get_survey_results` and
+`export_survey_responses`; both require the trusted instructor claim internally
+and are executable only by `authenticated`. Anonymous and ordinary signed-in
+users receive no results. The export deliberately omits browser tokens.
+
+Then run [`004_results.sql`](../supabase/tests/004_results.sql) in SQL Editor.
+It is transaction-wrapped and rolls back its fixtures. Require the final
+`PASS: instructor-only results counts, zero choice, unanswered and token-free export`
+message. Run `notify pgrst, 'reload schema';` if PostgREST has not yet exposed
+the new RPC signatures.
+
+## 7. Provision the approved instructor
 
 The application does not treat every signed-in user as an instructor. RLS and privileged RPCs require both a real Supabase Auth user ID and the trusted server-managed claim `app_metadata.role = instructor`.
 
@@ -101,7 +116,7 @@ update auth.users
 
 Never authorize from `user_metadata`, an email string, a frontend environment variable, or the generic `authenticated` role.
 
-## 7. Record the remote result before checking TODO verification tasks
+## 8. Record the remote result before checking TODO verification tasks
 
 Only after the remote migration and verification succeed should these TODO items be checked:
 
