@@ -1,5 +1,10 @@
 const memoryTokens = new Map<string, string>();
 const memorySuccess = new Set<string>();
+const uuidV4Pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export function isValidAnonymousToken(value: string): boolean {
+  return uuidV4Pattern.test(value);
+}
 
 function tokenKey(slug: string) {
   return `classroom-survey:token:${slug}`;
@@ -18,7 +23,7 @@ export function getAnonymousSurveyToken(slug: string): AnonymousTokenResult {
   const existingMemory = memoryTokens.get(slug);
   try {
     const existing = window.localStorage.getItem(tokenKey(slug));
-    if (existing) {
+    if (existing && isValidAnonymousToken(existing)) {
       memoryTokens.set(slug, existing);
       return { token: existing, persistent: true };
     }

@@ -57,7 +57,22 @@ refresh the browser, and retry. A `PGRST202` response means the API schema cache
 cannot currently resolve `public.save_survey`; it is not a form-validation
 failure.
 
-## 5. Provision the approved instructor
+## 5. Apply the Phase 8 token-validation migration
+
+Run the complete
+[`202611030003_strict_anonymous_tokens.sql`](../supabase/migrations/202611030003_strict_anonymous_tokens.sql)
+file once after the initial migration. It does not rewrite or delete existing
+responses. It moves the existing atomic submission implementation behind a
+non-executable private function and exposes an anonymous wrapper that accepts
+only UUIDv4 tokens. Successful new submissions store the lowercase token.
+
+The validation rule is: 36 hexadecimal UUID characters in `8-4-4-4-12`
+groups, version nibble `4`, and RFC 4122 variant nibble `8`, `9`, `a`, or `b`.
+Null, empty, whitespace, malformed, and non-v4 values return
+`INVALID_ANONYMOUS_TOKEN`. Run `notify pgrst, 'reload schema';` after the
+migration if the REST API temporarily reports a missing function.
+
+## 6. Provision the approved instructor
 
 The application does not treat every signed-in user as an instructor. RLS and privileged RPCs require both a real Supabase Auth user ID and the trusted server-managed claim `app_metadata.role = instructor`.
 
@@ -86,7 +101,7 @@ update auth.users
 
 Never authorize from `user_metadata`, an email string, a frontend environment variable, or the generic `authenticated` role.
 
-## 6. Record the remote result before checking TODO verification tasks
+## 7. Record the remote result before checking TODO verification tasks
 
 Only after the remote migration and verification succeed should these TODO items be checked:
 

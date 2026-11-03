@@ -314,7 +314,27 @@ declare
 begin
     begin
         perform public.submit_survey_response(
-            '10000000-0000-4000-8000-000000000002', 'missing-answer-token',
+            '10000000-0000-4000-8000-000000000002', null,
+            '[]'::jsonb
+        );
+        raise exception 'Missing anonymous token unexpectedly succeeded';
+    exception when invalid_parameter_value then
+        if sqlerrm <> 'INVALID_ANONYMOUS_TOKEN' then raise; end if;
+    end;
+
+    begin
+        perform public.submit_survey_response(
+            '10000000-0000-4000-8000-000000000002', 'not-a-uuid',
+            '[]'::jsonb
+        );
+        raise exception 'Malformed anonymous token unexpectedly succeeded';
+    exception when invalid_parameter_value then
+        if sqlerrm <> 'INVALID_ANONYMOUS_TOKEN' then raise; end if;
+    end;
+
+    begin
+        perform public.submit_survey_response(
+            '10000000-0000-4000-8000-000000000002', '70000000-0000-4000-8000-000000000001',
             '[{"question_id":"20000000-0000-4000-8000-000000000002","choice_id":"30000000-0000-4000-8000-000000000003"}]'::jsonb
         );
         raise exception 'Missing required answer unexpectedly succeeded';
@@ -324,7 +344,7 @@ begin
 
     begin
         perform public.submit_survey_response(
-            '10000000-0000-4000-8000-000000000002', 'wrong-choice-token',
+            '10000000-0000-4000-8000-000000000002', '70000000-0000-4000-8000-000000000002',
             '[{"question_id":"20000000-0000-4000-8000-000000000002","choice_id":"30000000-0000-4000-8000-000000000007"},{"question_id":"20000000-0000-4000-8000-000000000003","choice_id":"30000000-0000-4000-8000-000000000005"}]'::jsonb
         );
         raise exception 'Foreign choice unexpectedly succeeded';
@@ -334,7 +354,7 @@ begin
 
     begin
         perform public.submit_survey_response(
-            '10000000-0000-4000-8000-000000000002', 'wrong-question-token',
+            '10000000-0000-4000-8000-000000000002', '70000000-0000-4000-8000-000000000003',
             '[{"question_id":"20000000-0000-4000-8000-000000000001","choice_id":"30000000-0000-4000-8000-000000000001"},{"question_id":"20000000-0000-4000-8000-000000000003","choice_id":"30000000-0000-4000-8000-000000000005"}]'::jsonb
         );
         raise exception 'Foreign question unexpectedly succeeded';
@@ -343,7 +363,7 @@ begin
     end;
 
     v_result := public.submit_survey_response(
-        '10000000-0000-4000-8000-000000000002', 'valid-browser-token',
+        '10000000-0000-4000-8000-000000000002', '70000000-0000-4000-8000-000000000004',
         '[{"question_id":"20000000-0000-4000-8000-000000000002","choice_id":"30000000-0000-4000-8000-000000000003"},{"question_id":"20000000-0000-4000-8000-000000000003","choice_id":"30000000-0000-4000-8000-000000000005"}]'::jsonb
     );
     if v_result ->> 'success' <> 'true' or not (v_result ? 'response_id') then
@@ -352,7 +372,7 @@ begin
 
     begin
         perform public.submit_survey_response(
-            '10000000-0000-4000-8000-000000000002', 'valid-browser-token',
+            '10000000-0000-4000-8000-000000000002', '70000000-0000-4000-8000-000000000004',
             '[{"question_id":"20000000-0000-4000-8000-000000000002","choice_id":"30000000-0000-4000-8000-000000000004"},{"question_id":"20000000-0000-4000-8000-000000000003","choice_id":"30000000-0000-4000-8000-000000000006"}]'::jsonb
         );
         raise exception 'Duplicate submission unexpectedly succeeded';
@@ -368,9 +388,11 @@ begin
     if exists (
         select 1 from public.responses
          where anonymous_token in (
-             'missing-answer-token', 'wrong-choice-token', 'wrong-question-token'
+             '70000000-0000-4000-8000-000000000001',
+             '70000000-0000-4000-8000-000000000002',
+             '70000000-0000-4000-8000-000000000003'
          )
-    ) or (select count(*) from public.responses where anonymous_token = 'valid-browser-token') <> 1
+    ) or (select count(*) from public.responses where anonymous_token = '70000000-0000-4000-8000-000000000004') <> 1
        or (select count(*) from public.answers) <> 2 then
         raise exception 'Submission atomicity or answer insert count failed';
     end if;
@@ -386,7 +408,7 @@ declare
     v_choice_to_delete uuid;
 begin
     select id into v_response_id from public.responses
-     where anonymous_token = 'valid-browser-token';
+     where anonymous_token = '70000000-0000-4000-8000-000000000004';
 
     begin
         insert into public.answers (response_id, question_id, choice_id)
@@ -470,7 +492,7 @@ do $$
 begin
     begin
         perform public.submit_survey_response(
-            '10000000-0000-4000-8000-000000000001', 'after-close-token',
+            '10000000-0000-4000-8000-000000000001', '70000000-0000-4000-8000-000000000005',
             '[{"question_id":"20000000-0000-4000-8000-000000000001","choice_id":"30000000-0000-4000-8000-000000000001"}]'::jsonb
         );
         raise exception 'Post-close submission unexpectedly succeeded';

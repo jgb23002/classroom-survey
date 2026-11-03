@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useParams } from 'react-router';
 import { usePageTitle } from '../hooks/usePageTitle';
 import {
@@ -25,6 +25,7 @@ export function StudentSurveyPage() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
   const [storageWarning, setStorageWarning] = useState('');
+  const submissionLock = useRef(false);
 
   const applyLoaded = useCallback(
     (loaded: Awaited<ReturnType<typeof loadPublicSurvey>>) => {
@@ -90,7 +91,7 @@ export function StudentSurveyPage() {
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    if (!survey || submitting) return;
+    if (!survey || submissionLock.current) return;
     const unanswered = new Set(
       survey.questions.filter((question) => !answers[question.id]).map((question) => question.id),
     );
@@ -112,6 +113,7 @@ export function StudentSurveyPage() {
         'This browser could not save your anonymous submission token. Keep this page open while submitting.',
       );
     }
+    submissionLock.current = true;
     setSubmitting(true);
     try {
       await submitPublicSurvey(
@@ -137,6 +139,7 @@ export function StudentSurveyPage() {
         );
       }
     } finally {
+      submissionLock.current = false;
       setSubmitting(false);
     }
   }

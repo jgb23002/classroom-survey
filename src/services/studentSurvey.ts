@@ -108,7 +108,8 @@ function submissionErrorKind(error: { code?: string; message?: string }): Submis
     message.includes('INVALID_QUESTION') ||
     message.includes('INVALID_CHOICE') ||
     message.includes('MISSING_REQUIRED_ANSWER') ||
-    message.includes('INVALID_ANSWER_PAYLOAD')
+    message.includes('INVALID_ANSWER_PAYLOAD') ||
+    message.includes('INVALID_ANONYMOUS_TOKEN')
   )
     return 'invalid';
   if (/fetch|network|offline/i.test(message)) return 'network';

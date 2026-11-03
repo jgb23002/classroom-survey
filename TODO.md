@@ -212,11 +212,11 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 - [ ] Test activation.
 - [ ] Test closing surveys.
 - [ ] Test QR-code links.
-- [ ] Test student submissions.
-- [ ] Test duplicate-submission prevention.
+- [x] Test student submissions.
+- [x] Test duplicate-submission prevention.
 - [ ] Test results calculations.
 - [ ] Test CSV export.
-- [ ] Test mobile layout.
+- [x] Test mobile layout.
 - [ ] Test with at least two browsers.
 - [x] Test unauthorized access attempts.
 - [x] Test database Row Level Security.

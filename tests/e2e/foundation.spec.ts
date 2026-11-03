@@ -502,6 +502,7 @@ const publicSurvey = {
 
 test('student loads, validates, and submits anonymously through one RPC', async ({ page }) => {
   let submissionBody: Record<string, unknown> | undefined;
+  let submissionRequests = 0;
   const directWrites: string[] = [];
   page.on('request', (request) => {
     if (/\/rest\/v1\/(responses|answers)(?:\?|$)/.test(request.url()))
@@ -515,14 +516,19 @@ test('student loads, validates, and submits anonymously through one RPC', async 
     });
   });
   await page.route('**/rest/v1/rpc/submit_survey_response', async (route) => {
+    submissionRequests += 1;
     submissionBody = route.request().postDataJSON() as Record<string, unknown>;
-    await new Promise((resolve) => setTimeout(resolve, 150));
+    await new Promise((resolve) => setTimeout(resolve, 300));
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({ success: true, response_id: '40000000-0000-4000-8000-000000000080' }),
     });
   });
+  await page.goto('/');
+  await page.evaluate(() =>
+    localStorage.setItem('classroom-survey:token:recursion-check', 'tampered-token'),
+  );
   await page.goto('/s/recursion-check');
   await expect(page.getByRole('heading', { name: 'Recursion Concept Check' })).toBeVisible();
   await expect(page.getByText('Quick understanding check for CSE students')).toBeVisible();
@@ -536,12 +542,18 @@ test('student loads, validates, and submits anonymously through one RPC', async 
   await page.getByLabel('True', { exact: true }).check();
   const submit = page.getByRole('button', { name: 'Submit response' });
   expect((await submit.boundingBox())?.height).toBeGreaterThanOrEqual(44);
-  await submit.click();
+  await submit.evaluate((button) => {
+    (button as HTMLButtonElement).click();
+    (button as HTMLButtonElement).click();
+  });
   await expect(page.getByRole('button', { name: 'Submitting…' })).toBeDisabled();
   await expect(page.getByRole('heading', { name: 'Thank you!' })).toBeVisible();
 
+  expect(submissionRequests).toBe(1);
   expect(submissionBody?.p_survey_id).toBe(publicSurvey.survey.id);
-  expect(submissionBody?.p_anonymous_token).toEqual(expect.any(String));
+  expect(submissionBody?.p_anonymous_token).toEqual(
+    expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i),
+  );
   expect(submissionBody?.p_answers).toEqual([
     {
       question_id: publicSurvey.questions[0].id,

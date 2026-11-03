@@ -48,6 +48,7 @@ describe('anonymous student survey service', () => {
     ['DUPLICATE_RESPONSE', '23505', 'duplicate'],
     ['SURVEY_NOT_ACTIVE', 'P0001', 'closed'],
     ['INVALID_CHOICE', '23514', 'invalid'],
+    ['INVALID_ANONYMOUS_TOKEN', '22023', 'invalid'],
     ['Failed to fetch', '', 'network'],
   ];
 

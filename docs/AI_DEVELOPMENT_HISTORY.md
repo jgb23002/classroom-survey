@@ -93,6 +93,14 @@ Use: concise record of prompts, changes, verification and problems for the assig
 - **Problems, limits and manual checks remaining:** Browser API responses were intercepted; no real hosted student response was inserted. The exact route remains `/s/:slug` per UI/API despite the original TODO's `:surveyId` wording. Hosted anonymous RLS/RPC behavior, physical devices, a closure race through the public API and the 200-student target remain unverified.
 - **Next bounded phase:** Verify the deployed instructor-to-student flow, then implement the instructor-only results aggregation and charts.
 
+## 2026-11-03 — Phase 8: anonymous duplicate protection hardening
+
+- **Prompt/scope:** Implement and verify secure browser tokens, persistence, per-survey uniqueness, invalid-token rejection, concurrent duplicate safety, same-token use across different surveys, double-click handling, refresh behavior and limitations documentation.
+- **Files/behavior changed:** Added migration `202611030003` to require UUIDv4 tokens at the public RPC boundary while retaining the existing private atomic implementation and unique index; updated the disposable runner and concurrency suite. The browser now replaces tampered stored tokens, maps invalid-token errors, and uses a synchronous submission ref lock in addition to its disabled pending state. Added token validation tests and expanded setup/decision/status documentation.
+- **Validation performed and outcomes:** Disposable PostgreSQL applied all three migrations. Null and malformed tokens failed before writes. Two parallel sessions with the same survey/token yielded one success, one `DUPLICATE_RESPONSE`, and exactly one stored row. The same token succeeded once in each of two different surveys. Unit suite reached 49 passing tests. The rebuilt production bundle passed all 38 desktop/mobile browser tests, including two same-turn clicks producing one RPC, UUID shape, tampered-token replacement, persistence, refresh and friendly duplicate states. TypeScript, ESLint, formatting and production build passed; the existing bundle-size warning remains non-failing.
+- **Problems, limits and manual checks remaining:** No remote migration or hosted anonymous concurrency test was executed. Tokens prevent accidental repeats, not deliberate voting from cleared storage, another browser, or another device. Apply migration 003 remotely before relying on strict token validation.
+- **Next bounded phase:** Apply and verify pending migrations on Supabase, then implement instructor-only results aggregation and charts.
+
 ## Later phase entry format
 
 - **Prompt/scope:**

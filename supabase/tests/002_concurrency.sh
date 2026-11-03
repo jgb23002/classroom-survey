@@ -25,6 +25,9 @@ SQL
 
 cleanup_rows() {
   "${psql_base[@]}" -c "delete from public.surveys where id in ('10000000-0000-4000-8000-000000000021', '10000000-0000-4000-8000-000000000022')" >/dev/null 2>&1 || true
+  if [[ -n "${duplicate_test_dir:-}" ]]; then
+    rm -rf "$duplicate_test_dir"
+  fi
 }
 trap cleanup_rows EXIT
 
@@ -57,9 +60,80 @@ active_id=$("${psql_base[@]}" -c "select id from public.surveys where status = '
 if [[ "$active_id" == '10000000-0000-4000-8000-000000000021' ]]; then
   active_question='20000000-0000-4000-8000-000000000021'
   active_choice='30000000-0000-4000-8000-000000000021'
+  other_id='10000000-0000-4000-8000-000000000022'
+  other_question='20000000-0000-4000-8000-000000000022'
+  other_choice='30000000-0000-4000-8000-000000000022'
 else
   active_question='20000000-0000-4000-8000-000000000022'
   active_choice='30000000-0000-4000-8000-000000000022'
+  other_id='10000000-0000-4000-8000-000000000021'
+  other_question='20000000-0000-4000-8000-000000000021'
+  other_choice='30000000-0000-4000-8000-000000000021'
+fi
+
+# A browser token is unique only within one survey. The same browser may
+# participate once in a different survey after the instructor switches it on.
+same_browser_token='70000000-0000-4000-8000-000000000021'
+"${psql_base[@]}" <<SQL
+set role anon;
+select public.submit_survey_response(
+  '$active_id', '$same_browser_token',
+  '[{"question_id":"$active_question","choice_id":"$active_choice"}]'::jsonb
+);
+SQL
+activate_one "$other_id"
+active_id="$other_id"
+active_question="$other_question"
+active_choice="$other_choice"
+"${psql_base[@]}" <<SQL
+set role anon;
+select public.submit_survey_response(
+  '$active_id', '$same_browser_token',
+  '[{"question_id":"$active_question","choice_id":"$active_choice"}]'::jsonb
+);
+SQL
+same_browser_count=$("${psql_base[@]}" -c "select count(*) from public.responses where anonymous_token = '$same_browser_token'")
+if [[ "$same_browser_count" != "2" ]]; then
+  echo "Same browser token did not submit once to each survey" >&2
+  exit 1
+fi
+
+# Launch identical submissions in separate sessions. Exactly one transaction
+# may commit; the other must surface the unique-index duplicate error.
+duplicate_test_dir=$(mktemp -d /private/tmp/classroom-survey-duplicate.XXXXXX)
+submit_duplicate() {
+  local output_file="$1"
+  "${psql_base[@]}" >"$output_file" 2>&1 <<SQL
+set role anon;
+select public.submit_survey_response(
+  '$active_id', '70000000-0000-4000-8000-000000000022',
+  '[{"question_id":"$active_question","choice_id":"$active_choice"}]'::jsonb
+);
+SQL
+}
+set +e
+submit_duplicate "$duplicate_test_dir/one.log" &
+duplicate_pid_one=$!
+submit_duplicate "$duplicate_test_dir/two.log" &
+duplicate_pid_two=$!
+wait "$duplicate_pid_one"
+duplicate_status_one=$?
+wait "$duplicate_pid_two"
+duplicate_status_two=$?
+set -e
+if [[ "$duplicate_status_one" -eq "$duplicate_status_two" ]]; then
+  echo "Expected one concurrent duplicate submission to succeed and one to fail" >&2
+  exit 1
+fi
+if ! grep -q 'DUPLICATE_RESPONSE' "$duplicate_test_dir/one.log" \
+   && ! grep -q 'DUPLICATE_RESPONSE' "$duplicate_test_dir/two.log"; then
+  echo "Concurrent duplicate failure did not report DUPLICATE_RESPONSE" >&2
+  exit 1
+fi
+duplicate_count=$("${psql_base[@]}" -c "select count(*) from public.responses where anonymous_token = '70000000-0000-4000-8000-000000000022' and survey_id = '$active_id'")
+if [[ "$duplicate_count" != "1" ]]; then
+  echo "Concurrent duplicate submissions created $duplicate_count rows" >&2
+  exit 1
 fi
 
 "${psql_base[@]}" <<SQL &
@@ -67,7 +141,7 @@ begin;
 set local role anon;
 select public.submit_survey_response(
   '$active_id',
-  'concurrent-close-token',
+  '70000000-0000-4000-8000-000000000023',
   '[{"question_id":"$active_question","choice_id":"$active_choice"}]'::jsonb
 );
 select pg_sleep(0.75);
@@ -93,7 +167,7 @@ if (( elapsed_ms < 500 )); then
   exit 1
 fi
 
-response_count=$("${psql_base[@]}" -c "select count(*) from public.responses where anonymous_token = 'concurrent-close-token'")
+response_count=$("${psql_base[@]}" -c "select count(*) from public.responses where anonymous_token = '70000000-0000-4000-8000-000000000023'")
 status=$("${psql_base[@]}" -c "select status from public.surveys where id = '$active_id'")
 if [[ "$response_count" != "1" || "$status" != "closed" ]]; then
   echo "Unexpected submit/close result: responses=$response_count status=$status" >&2
@@ -105,7 +179,7 @@ post_close_output=$("${psql_base[@]}" 2>&1 <<SQL
 set role anon;
 select public.submit_survey_response(
   '$active_id',
-  'post-close-concurrency-token',
+  '70000000-0000-4000-8000-000000000024',
   '[{"question_id":"$active_question","choice_id":"$active_choice"}]'::jsonb
 );
 SQL
@@ -117,4 +191,4 @@ if [[ $post_close_status -eq 0 || "$post_close_output" != *"SURVEY_NOT_ACTIVE"* 
   exit 1
 fi
 
-echo "PASS: concurrent activation kept one active survey; close waited ${elapsed_ms}ms for an admitted submission; later submission rejected"
+echo "PASS: concurrent activation kept one active survey; same token submitted once per different survey; concurrent duplicate committed once; close waited ${elapsed_ms}ms for an admitted submission; later submission rejected"
