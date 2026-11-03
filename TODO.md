@@ -8,7 +8,7 @@ This roadmap breaks the implementation into small, testable phases ordered from 
 
 ## Progress evidence — 2026-11-02
 
-Only Phase 1 is implemented. Its checks are supported by the source, installed dependencies, and verification recorded in [docs/PHASE_1_REPORT.md](docs/PHASE_1_REPORT.md). Unsupported completion marks supplied for later phases have been reset; no database, authentication, survey features, or deployment is certified complete.
+Phase 1 and the local Phase 2 database implementation are complete. Phase 2's migration and security tests passed in disposable PostgreSQL; the hosted Supabase project and remote role/API verification remain pending. Evidence is recorded in [docs/PHASE_1_REPORT.md](docs/PHASE_1_REPORT.md) and [docs/PHASE_2_REPORT.md](docs/PHASE_2_REPORT.md). No authentication UI, survey workflow, hosted database, or deployment is certified complete.
 
 The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TODO_ORIGINAL.md). The public route is `/s/:slug` per UI.md/API.md; Phase 7 retains the original `:surveyId` wording for traceability. See [docs/TODO_STATUS.md](docs/TODO_STATUS.md) for the historical audit and current evidence.
 
@@ -31,16 +31,16 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 # Phase 2 — Supabase Project and Database
 
 - [ ] Create a Supabase project.
-- [ ] Create the `surveys` table.
-- [ ] Create the `questions` table.
-- [ ] Create the `choices` table.
-- [ ] Create the `responses` table.
-- [ ] Create the `answers` table.
-- [ ] Add foreign-key constraints.
-- [ ] Add database indexes.
-- [ ] Add timestamps.
-- [ ] Add survey-status validation.
-- [ ] Create Row Level Security policies.
+- [x] Create the `surveys` table.
+- [x] Create the `questions` table.
+- [x] Create the `choices` table.
+- [x] Create the `responses` table.
+- [x] Create the `answers` table.
+- [x] Add foreign-key constraints.
+- [x] Add database indexes.
+- [x] Add timestamps.
+- [x] Add survey-status validation.
+- [x] Create Row Level Security policies.
 - [ ] Verify students cannot read survey results.
 - [ ] Verify anonymous students can read active surveys.
 - [ ] Verify anonymous students can submit responses.

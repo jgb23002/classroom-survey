@@ -28,6 +28,15 @@ Use: concise record of prompts, changes, verification and problems for the assig
 - **Progress:** Updated current TODO under the user's explicit authorization: 11 Phase 1 tasks checked, 153 later tasks unchecked. Preserved all task descriptions and the byte-identical received snapshot. Other supplied specifications are unchanged.
 - **Limits/next phase:** No live Auth, route authorization, database/migrations/RLS/RPC, survey operations, QR/charts/CSV, 200-student performance result, GitHub push or deployment is implemented/certified. Owner Supabase setup and the reviewed database phase come next; work stops after Phase 1.
 
+## 2026-11-02 — Phase 2: schema, security and database functions
+
+- **Prompt/scope:** Implement the five-table Supabase PostgreSQL schema, constraints/indexes/timestamps, RLS and approved-instructor authorization; add atomic activate/close/submission RPCs, SQL verification, manual SQL Editor instructions, TODO/history updates; do not claim remote setup.
+- **Changes:** Added the versioned migration, local Supabase role/Auth compatibility bootstrap, transaction-wrapped schema/security verification, concurrent activation/submit-close test, disposable PostgreSQL runner, Supabase README/setup guide and Phase 2 report. The migration implements all five tables, specified delete behavior, one-active/duplicate constraints, updated-at and answer-integrity triggers, active-only anonymous reads, claim-protected instructor policies, explicit grants and four narrow RPCs (including the documented public lookup helper).
+- **Validation:** PostgreSQL 16.13 was available locally. The final fresh-cluster run applied the migration and passed structural, grant, RLS, authorization, validation, duplicate, lifecycle, closure, referential/cascade and public-data tests. Parallel activation left exactly one active survey. In the final submit-close race, close waited 670 ms for the admitted submission, then later submission failed as inactive. The temporary cluster was stopped and removed.
+- **Problems/resolutions:** Sandbox shared-memory policy blocked the first PostgreSQL cluster; the approved outside-sandbox test used only a unique `/private/tmp` cluster. Corrected a catalog assertion for PostgreSQL's `search_path=""` representation, changed `updated_at` from transaction-stable `now()` to `clock_timestamp()`, and moved anonymous-inaccessible row counts into the authorized test context. Fresh migration runs passed after each fix.
+- **Progress:** Checked the ten Phase 2 implementation tasks supported by the locally applied migration. Left Supabase project creation and four remote access-verification tasks unchecked. The original TODO snapshot remains unchanged.
+- **Limits/manual work:** No remote Supabase project/schema/Auth/API was changed or verified. The owner must follow `docs/SUPABASE_SETUP.md`, run the migration and rollback-safe verification in SQL Editor, configure Auth and provision the trusted claim before remote completion can be recorded. No secret/service-role key was added.
+
 ## Later phase entry format
 
 - **Prompt/scope:**
