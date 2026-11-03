@@ -51,6 +51,12 @@ RPC; it does not replace tables, policies, or existing data. Then run
 `PASS` result. The verification is transaction-wrapped and rolls back its
 synthetic survey.
 
+If the browser reports that survey saving is not installed after the migration
+finishes successfully, run `notify pgrst, 'reload schema';` once in SQL Editor,
+refresh the browser, and retry. A `PGRST202` response means the API schema cache
+cannot currently resolve `public.save_survey`; it is not a form-validation
+failure.
+
 ## 5. Provision the approved instructor
 
 The application does not treat every signed-in user as an instructor. RLS and privileged RPCs require both a real Supabase Auth user ID and the trusted server-managed claim `app_metadata.role = instructor`.

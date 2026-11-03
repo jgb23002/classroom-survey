@@ -136,6 +136,21 @@ export function DashboardPage() {
     }
   }
 
+  async function handleActivate(survey: SurveySummary) {
+    setBusySurveyId(survey.id);
+    setMutationError('');
+    try {
+      await activateSurvey(survey.id);
+      navigate(`/surveys/${survey.id}/present`);
+    } catch (caught) {
+      setMutationError(
+        caught instanceof Error ? caught.message : 'The survey could not be activated.',
+      );
+    } finally {
+      setBusySurveyId(null);
+    }
+  }
+
   const filtered = search.trim() !== '' || status !== 'all';
 
   return (
@@ -198,11 +213,6 @@ export function DashboardPage() {
         </div>
       </div>
 
-      <p className="mt-5 rounded-xl border border-brand-100 bg-brand-50 p-4 text-sm leading-6 text-brand-900">
-        Survey creation and eligible draft editing are available now. QR presentation and results
-        screens are delivered in later phases; those links open prepared protected routes.
-      </p>
-
       {mutationError && (
         <p
           role="alert"
@@ -262,7 +272,7 @@ export function DashboardPage() {
                 key={survey.id}
                 survey={survey}
                 busy={busySurveyId === survey.id}
-                onActivate={() => void mutate(survey, () => activateSurvey(survey.id))}
+                onActivate={() => void handleActivate(survey)}
                 onClose={() => handleClose(survey)}
                 onDuplicate={() => void handleDuplicate(survey)}
                 onArchive={() => handleArchive(survey)}

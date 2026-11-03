@@ -439,6 +439,7 @@ select set_config(
 do $$
 declare
     v_result jsonb;
+    v_slug text;
 begin
     v_result := public.activate_survey('10000000-0000-4000-8000-000000000001');
     if v_result ->> 'status' <> 'active' or length(v_result ->> 'public_slug') < 12 then
@@ -448,11 +449,18 @@ begin
        or (select status from public.surveys where id = '10000000-0000-4000-8000-000000000002') <> 'closed' then
         raise exception 'Activation did not close previous survey';
     end if;
+    v_slug := v_result ->> 'public_slug';
 
     v_result := public.close_survey('10000000-0000-4000-8000-000000000001');
     if v_result ->> 'status' <> 'closed' then
         raise exception 'Close result invalid: %', v_result;
     end if;
+
+    v_result := public.activate_survey('10000000-0000-4000-8000-000000000001');
+    if v_result ->> 'public_slug' <> v_slug then
+        raise exception 'Reactivation changed the public slug';
+    end if;
+    perform public.close_survey('10000000-0000-4000-8000-000000000001');
 end;
 $$;
 reset role;

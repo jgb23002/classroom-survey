@@ -1,7 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseClient } from '../lib/supabase';
+import { sessionIsInstructor } from '../types/auth';
 import { isSurveyStatus, type SurveySummary } from '../types/survey';
 import type { LoadedSurveyEditor, SavedSurvey, SurveyEditorValue } from '../types/surveyEditor';
+import type { ActivatedSurvey, PresentationSurvey } from '../types/presentation';
 
 export class SurveyServiceError extends Error {
   constructor(message: string) {
@@ -57,6 +59,20 @@ function message(action: string) {
   return `The survey could not be ${action}. Please try again.`;
 }
 
+interface SafeSupabaseError {
+  code?: string;
+  message?: string;
+}
+
+function logSaveFailure(stage: 'session' | 'rpc' | 'response', error?: SafeSupabaseError) {
+  // Never log survey content, tokens, credentials, URLs, or user identifiers.
+  console.error('[survey-save]', {
+    stage,
+    code: error?.code ?? 'UNKNOWN',
+    category: surveySaveErrorCategory(error),
+  });
+}
+
 export async function listSurveys(supabase: SupabaseClient = client()): Promise<SurveySummary[]> {
   const { data, error } = await supabase
     .from('surveys')
@@ -81,14 +97,57 @@ export async function listSurveys(supabase: SupabaseClient = client()): Promise<
   });
 }
 
-export async function activateSurvey(id: string, supabase: SupabaseClient = client()) {
-  const { error } = await supabase.rpc('activate_survey', { p_survey_id: id });
-  if (error) throw new SurveyServiceError(message('activated'));
+export async function activateSurvey(
+  id: string,
+  supabase: SupabaseClient = client(),
+): Promise<ActivatedSurvey> {
+  const { data, error } = await supabase.rpc('activate_survey', { p_survey_id: id });
+  if (error || !data) throw new SurveyServiceError(message('activated'));
+  const result = data as { id?: unknown; status?: unknown; public_slug?: unknown };
+  if (
+    typeof result.id !== 'string' ||
+    result.status !== 'active' ||
+    typeof result.public_slug !== 'string' ||
+    result.public_slug.length === 0
+  ) {
+    throw new SurveyServiceError('The database returned an invalid activation result.');
+  }
+  return { id: result.id, status: 'active', publicSlug: result.public_slug };
 }
 
 export async function closeSurvey(id: string, supabase: SupabaseClient = client()) {
   const { error } = await supabase.rpc('close_survey', { p_survey_id: id });
   if (error) throw new SurveyServiceError(message('closed'));
+}
+
+interface PresentationRow {
+  id: string;
+  title: string;
+  status: unknown;
+  public_slug: string | null;
+  responses: { count: number }[] | null;
+}
+
+export async function getPresentationSurvey(
+  id: string,
+  supabase: SupabaseClient = client(),
+): Promise<PresentationSurvey> {
+  const { data, error } = await supabase
+    .from('surveys')
+    .select('id,title,status,public_slug,responses(count)')
+    .eq('id', id)
+    .single();
+  if (error || !data) throw new SurveyServiceError('The presentation could not be loaded.');
+  const row = data as unknown as PresentationRow;
+  if (!isSurveyStatus(row.status))
+    throw new SurveyServiceError('The survey has an invalid status.');
+  return {
+    id: row.id,
+    title: row.title,
+    status: row.status,
+    publicSlug: row.public_slug,
+    responseCount: row.responses?.[0]?.count ?? 0,
+  };
 }
 
 export async function archiveSurvey(id: string, supabase: SupabaseClient = client()) {
@@ -203,7 +262,28 @@ export async function loadSurveyEditor(
   };
 }
 
-function saveError(rawMessage: string): string {
+export function surveySaveErrorCategory(error?: SafeSupabaseError): string {
+  const rawMessage = error?.message ?? '';
+  if (error?.code === 'PGRST202' || /save_survey.*schema cache/i.test(rawMessage))
+    return 'rpc-unavailable';
+  if (error?.code === '42501' || rawMessage.includes('AUTHORIZATION_REQUIRED'))
+    return 'instructor-authorization';
+  if (/jwt|session|refresh token/i.test(rawMessage)) return 'session';
+  if (rawMessage.includes('SURVEY_EDIT_CONFLICT')) return 'edit-conflict';
+  if (rawMessage.includes('SURVEY_ACTIVE')) return 'active';
+  if (rawMessage.includes('SURVEY_ARCHIVED')) return 'archived';
+  if (rawMessage.includes('SURVEY_HAS_RESPONSES')) return 'has-responses';
+  return 'unknown';
+}
+
+export function surveySaveErrorMessage(error?: SafeSupabaseError): string {
+  const rawMessage = error?.message ?? '';
+  if (surveySaveErrorCategory(error) === 'rpc-unavailable')
+    return 'Survey saving is not installed in this Supabase project. Apply migration 202611030002_atomic_survey_editor.sql, then reload the API schema.';
+  if (surveySaveErrorCategory(error) === 'instructor-authorization')
+    return 'Your current session is not authorized as an instructor. Sign out and sign back in after confirming the instructor role.';
+  if (surveySaveErrorCategory(error) === 'session')
+    return 'Your session expired. Sign out, sign back in, and try saving again.';
   if (rawMessage.includes('SURVEY_EDIT_CONFLICT'))
     return 'This survey changed in another tab. Reload before saving again.';
   if (rawMessage.includes('SURVEY_ACTIVE')) return 'Close this active survey before editing it.';
@@ -219,6 +299,17 @@ export async function saveSurveyDraft(
   value: SurveyEditorValue,
   supabase: SupabaseClient = client(),
 ): Promise<SavedSurvey> {
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) {
+    logSaveFailure('session', sessionError);
+    throw new SurveyServiceError(surveySaveErrorMessage(sessionError));
+  }
+  if (!sessionIsInstructor(sessionData.session)) {
+    const authorizationError = { code: '42501', message: 'AUTHORIZATION_REQUIRED' };
+    logSaveFailure('session', authorizationError);
+    throw new SurveyServiceError(surveySaveErrorMessage(authorizationError));
+  }
+
   const questions = value.questions.map((question, questionIndex) => ({
     id: question.id,
     question_text: question.text,
@@ -237,13 +328,23 @@ export async function saveSurveyDraft(
     p_description: value.description,
     p_questions: questions,
   });
-  if (error || !data) throw new SurveyServiceError(saveError(error?.message ?? ''));
+  if (error) {
+    logSaveFailure('rpc', error);
+    throw new SurveyServiceError(surveySaveErrorMessage(error));
+  }
+  if (!data) {
+    logSaveFailure('response');
+    throw new SurveyServiceError(
+      'The database returned an empty save result. Your edits are still here.',
+    );
+  }
   const result = data as { id?: unknown; status?: unknown; updated_at?: unknown };
   if (
     typeof result.id !== 'string' ||
     result.status !== 'draft' ||
     typeof result.updated_at !== 'string'
   ) {
+    logSaveFailure('response');
     throw new SurveyServiceError('The database returned an invalid save result.');
   }
   return { id: result.id, status: 'draft', updatedAt: result.updated_at };

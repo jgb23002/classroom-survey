@@ -370,6 +370,75 @@ test('survey editor warns before discarding edits and locks active surveys', asy
   await expect(page.getByText('Close this active survey before editing it.')).toBeVisible();
 });
 
+test('presentation generates the production URL QR, copies, downloads PNG, and closes', async ({
+  page,
+  context,
+}) => {
+  const surveyId = '10000000-0000-4000-8000-000000000070';
+  let status = 'active';
+  let closeRequests = 0;
+  await page.route('**/rest/v1/surveys*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: route.request().url().includes('select=id%2Ctitle%2Cstatus')
+        ? 'application/vnd.pgrst.object+json'
+        : 'application/json',
+      body: route.request().url().includes('select=id%2Ctitle%2Cstatus')
+        ? JSON.stringify({
+            id: surveyId,
+            title: 'Recursion Concept Check',
+            status,
+            public_slug: '8f3ab241be99f212f4ac9870',
+            responses: [{ count: 42 }],
+          })
+        : JSON.stringify(dashboardRows),
+    });
+  });
+  await page.route('**/rest/v1/rpc/close_survey', async (route) => {
+    closeRequests += 1;
+    status = 'closed';
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ id: surveyId, status: 'closed' }),
+    });
+  });
+  await openAuthenticatedDashboard(page);
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'], {
+    origin: 'http://127.0.0.1:4173',
+  });
+  await page.goto(`/surveys/${surveyId}/present`);
+
+  await expect(page.getByRole('heading', { name: 'Recursion Concept Check' })).toBeVisible();
+  await expect(page.getByText('42', { exact: true })).toBeVisible();
+  const expectedUrl = `http://127.0.0.1:4173/s/8f3ab241be99f212f4ac9870`;
+  await expect(page.getByRole('link', { name: expectedUrl })).toHaveAttribute('href', expectedUrl);
+  const qr = page.getByRole('img', { name: 'QR code for Recursion Concept Check' });
+  await expect(qr).toHaveAttribute('src', /^data:image\/png;base64,/);
+  await expect(page.getByText('local URL is for development only')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Copy URL' }).click();
+  await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(expectedUrl);
+
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download QR PNG' }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe('recursion-concept-check-qr.png');
+  const stream = await download.createReadStream();
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) chunks.push(Buffer.from(chunk));
+  expect(Buffer.concat(chunks).subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
+
+  page.once('dialog', async (dialog) => {
+    expect(dialog.message()).toContain('New student submissions will be rejected immediately');
+    await dialog.accept();
+  });
+  await page.getByRole('button', { name: 'Close survey' }).click();
+  await expect.poll(() => closeRequests).toBe(1);
+  await expect(page.getByText('closed', { exact: true })).toBeVisible();
+  await expect(page.getByText('New submissions are no longer accepted.')).toBeVisible();
+});
+
 const routes = [
   ['/dashboard', 'Dashboard'],
   ['/surveys/new', 'New survey'],

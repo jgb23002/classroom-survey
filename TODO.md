@@ -8,7 +8,7 @@ This roadmap breaks the implementation into small, testable phases ordered from 
 
 ## Progress evidence — 2026-11-03
 
-Phases 1–5 are implemented and verified locally. The protected dashboard reads real Supabase survey data, and the survey editor creates/loads drafts with stable question/choice IDs through an atomic save RPC. Active, archived, and closed-with-responses content is protected from editing. QR presentation and results remain later-phase placeholders. The initial migration was reported as manually applied, but the new Phase 5 migration, rollback-safe remote SQL/RLS suite, and real role-specific client verification remain manual. Evidence is recorded in [docs/PHASE_1_REPORT.md](docs/PHASE_1_REPORT.md), [docs/PHASE_2_REPORT.md](docs/PHASE_2_REPORT.md), [docs/REMOTE_DATABASE_VERIFICATION.md](docs/REMOTE_DATABASE_VERIFICATION.md), and [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md).
+Phases 1–6 are implemented and verified locally. The protected dashboard reads real Supabase survey data, the survey editor persists stable question/choice IDs through an atomic save RPC, and the presentation page provides an origin-derived public URL, real QR PNG, response-count polling, and authorized activation/closure. Active, archived, and closed-with-responses content is protected from editing. Results and student participation remain later phases. The initial migration was reported as manually applied, but the new Phase 5 migration, rollback-safe remote SQL/RLS suite, real role-specific client verification, deployed QR scan, and hosted lifecycle flow remain manual. Evidence is recorded in [docs/PHASE_1_REPORT.md](docs/PHASE_1_REPORT.md), [docs/PHASE_2_REPORT.md](docs/PHASE_2_REPORT.md), [docs/REMOTE_DATABASE_VERIFICATION.md](docs/REMOTE_DATABASE_VERIFICATION.md), and [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md).
 
 The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TODO_ORIGINAL.md). The public route is `/s/:slug` per UI.md/API.md; Phase 7 retains the original `:surveyId` wording for traceability. See [docs/TODO_STATUS.md](docs/TODO_STATUS.md) for the historical audit and current evidence.
 
@@ -105,13 +105,13 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 - [x] Ensure at most one survey is Active.
 - [x] Automatically close the previously active survey.
 - [x] Generate a public survey slug or identifier.
-- [ ] Generate the public survey URL.
-- [ ] Generate a QR code from the public URL.
-- [ ] Create a Present Survey page.
-- [ ] Display survey title and QR code.
-- [ ] Display a readable fallback URL.
-- [ ] Add a Close Survey button.
-- [ ] Add a Download QR Code button.
+- [x] Generate the public survey URL.
+- [x] Generate a QR code from the public URL.
+- [x] Create a Present Survey page.
+- [x] Display survey title and QR code.
+- [x] Display a readable fallback URL.
+- [x] Add a Close Survey button.
+- [x] Add a Download QR Code button.
 
 ---
 
