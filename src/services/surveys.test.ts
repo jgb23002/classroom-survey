@@ -1,6 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { describe, expect, it, vi } from 'vitest';
-import { saveSurveyDraft, surveySaveErrorCategory, surveySaveErrorMessage } from './surveys';
+import {
+  duplicateSurvey,
+  saveSurveyDraft,
+  surveySaveErrorCategory,
+  surveySaveErrorMessage,
+} from './surveys';
 
 const draft = { title: 'Test', description: '', questions: [] };
 
@@ -51,6 +56,21 @@ describe('survey draft persistence diagnostics', () => {
       id: '10000000-0000-4000-8000-000000000001',
       status: 'draft',
       updatedAt: '2026-11-03T12:00:00.000Z',
+    });
+  });
+});
+
+describe('survey duplication', () => {
+  it('uses one atomic RPC and returns its new draft ID', async () => {
+    const supabase = client('instructor', {
+      data: { id: '10000000-0000-4000-8000-000000000099', status: 'draft' },
+      error: null,
+    });
+    await expect(duplicateSurvey('10000000-0000-4000-8000-000000000001', supabase)).resolves.toBe(
+      '10000000-0000-4000-8000-000000000099',
+    );
+    expect(supabase.rpc).toHaveBeenCalledWith('duplicate_survey', {
+      p_survey_id: '10000000-0000-4000-8000-000000000001',
     });
   });
 });

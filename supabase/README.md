@@ -8,11 +8,13 @@ Phase 2 provides a versioned PostgreSQL migration and verification suite. It has
 - `migrations/202611030002_atomic_survey_editor.sql` — instructor-only atomic survey graph create/update with stale-write and historical-response protection.
 - `migrations/202611030003_strict_anonymous_tokens.sql` — public submission wrapper requiring UUIDv4 browser tokens while preserving the private atomic implementation and existing response rows.
 - `migrations/202611030004_instructor_results.sql` — instructor-authorized aggregate and token-free response-export RPCs.
+- `migrations/202611030005_atomic_survey_duplication.sql` — instructor-authorized, transaction-atomic survey/question/choice duplication without slugs or submissions.
 - `tests/000_local_supabase_bootstrap.sql` — local-only Supabase role/Auth compatibility layer. Never run this in Supabase.
 - `tests/001_schema_and_security.sql` — transaction-wrapped structural, RLS, authorization, validation, lifecycle and integrity verification. It rolls back its synthetic records and can be pasted into Supabase SQL Editor after the migration.
 - `tests/002_concurrency.sh` — concurrent activation, same-token duplicate, cross-survey token and submit-versus-close checks. Use only against a disposable local/test database; it removes its two fixed survey fixtures on exit.
 - `tests/003_editor.sql` — rollback-safe atomic editor create/update/reorder/conflict/history checks.
 - `tests/004_results.sql` — rollback-safe instructor authorization, aggregate, zero-choice, unanswered and export-privacy checks.
+- `tests/005_duplication.sql` — rollback-safe authorization, ordered-content, no-submission-copy and failure-integrity checks.
 - `tests/run_local.sh` — creates a temporary PostgreSQL cluster under `/private/tmp`, applies the migration, runs both suites and removes the cluster.
 
 ## Local verification

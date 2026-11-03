@@ -35,6 +35,13 @@ describe('dashboard survey utilities', () => {
     expect(filterSurveys(surveys, 'review', 'draft')).toEqual([]);
   });
 
+  it('filters created dates inclusively and combines them with title', () => {
+    expect(filterSurveys(surveys, 'review', 'all', '2026-08-18', '2026-08-18')).toEqual([
+      surveys[1],
+    ]);
+    expect(filterSurveys(surveys, '', 'all', '2026-08-19', '')).toEqual([]);
+  });
+
   it('returns a safe fallback for invalid dates', () => {
     expect(formatSurveyDate('not-a-date')).toBe('Unknown date');
   });

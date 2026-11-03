@@ -183,6 +183,12 @@ test('dashboard renders real response shapes and filters by title and status', a
   await page.getByRole('button', { name: 'Clear filters' }).first().click();
   await expect(page.getByRole('heading', { name: 'Recursion Concept Check' })).toBeVisible();
 
+  await page.getByLabel('Created from').fill('2026-11-02');
+  await page.getByLabel('Created through').fill('2026-11-02');
+  await expect(page.getByRole('heading', { name: 'Active Pointer Poll' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Recursion Concept Check' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Clear filters' }).click();
+
   const activeActions = page.getByLabel('Actions for Active Pointer Poll');
   await expect(activeActions.getByRole('button', { name: 'Close' })).toBeVisible();
   await expect(activeActions.getByRole('link', { name: 'Present QR' })).toBeVisible();
@@ -219,6 +225,52 @@ test('dashboard confirms close and refreshes after the RPC mutation', async ({ p
     .click();
   await expect.poll(() => closeRequests).toBe(1);
   await expect.poll(() => listRequests).toBeGreaterThan(1);
+});
+
+test('dashboard duplicates atomically and redirects to the new draft editor', async ({ page }) => {
+  const copyId = '10000000-0000-4000-8000-000000000099';
+  let duplicateBody: Record<string, unknown> | undefined;
+  await page.route('**/rest/v1/surveys*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(dashboardRows),
+    });
+  });
+  await page.route('**/rest/v1/rpc/duplicate_survey', async (route) => {
+    duplicateBody = route.request().postDataJSON() as Record<string, unknown>;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ id: copyId, status: 'draft' }),
+    });
+  });
+  await page.route(
+    '**/rest/v1/surveys?select=id%2Ctitle%2Cdescription%2Cstatus%2Cupdated_at*',
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/vnd.pgrst.object+json',
+        body: JSON.stringify({
+          id: copyId,
+          title: 'Copy of Closed Arrays Review',
+          description: 'Historical results',
+          status: 'draft',
+          updated_at: '2026-11-03T20:00:00.000Z',
+          responses: [{ count: 0 }],
+          questions: [],
+        }),
+      });
+    },
+  );
+  await openAuthenticatedDashboard(page);
+  await page
+    .getByLabel('Actions for Closed Arrays Review')
+    .getByRole('button', { name: 'Duplicate' })
+    .click();
+  await expect(page).toHaveURL(`/surveys/${copyId}/edit`);
+  expect(duplicateBody).toEqual({ p_survey_id: dashboardRows[2]?.id });
+  await expect(page.getByLabel('Survey title')).toHaveValue('Copy of Closed Arrays Review');
 });
 
 test('dashboard shows loading, error retry, and empty states', async ({ page }) => {

@@ -23,18 +23,6 @@ interface SurveyRow {
   responses: { count: number }[] | null;
 }
 
-interface SurveyGraph {
-  title: string;
-  description: string | null;
-  questions: Array<{
-    id: string;
-    question_text: string;
-    question_type: 'multiple_choice' | 'true_false';
-    position: number;
-    choices: Array<{ choice_text: string; position: number }>;
-  }>;
-}
-
 interface EditorSurveyRow {
   id: string;
   title: string;
@@ -175,55 +163,12 @@ export async function duplicateSurvey(
   id: string,
   supabase: SupabaseClient = client(),
 ): Promise<string> {
-  const { data: sourceData, error: sourceError } = await supabase
-    .from('surveys')
-    .select(
-      'title,description,questions(id,question_text,question_type,position,choices(choice_text,position))',
-    )
-    .eq('id', id)
-    .order('position', { referencedTable: 'questions', ascending: true })
-    .order('position', { referencedTable: 'questions.choices', ascending: true })
-    .single();
-
-  if (sourceError || !sourceData) throw new SurveyServiceError(message('duplicated'));
-  const source = sourceData as unknown as SurveyGraph;
-  const { data: copy, error: copyError } = await supabase
-    .from('surveys')
-    .insert({ title: `Copy of ${source.title}`, description: source.description, status: 'draft' })
-    .select('id')
-    .single();
-  if (copyError || !copy) throw new SurveyServiceError(message('duplicated'));
-
-  try {
-    for (const question of source.questions) {
-      const { data: copiedQuestion, error: questionError } = await supabase
-        .from('questions')
-        .insert({
-          survey_id: copy.id,
-          question_text: question.question_text,
-          question_type: question.question_type,
-          position: question.position,
-        })
-        .select('id')
-        .single();
-      if (questionError || !copiedQuestion) throw new Error('question copy failed');
-
-      if (question.choices.length) {
-        const { error: choicesError } = await supabase.from('choices').insert(
-          question.choices.map((choice) => ({
-            question_id: copiedQuestion.id,
-            choice_text: choice.choice_text,
-            position: choice.position,
-          })),
-        );
-        if (choicesError) throw new Error('choice copy failed');
-      }
-    }
-    return copy.id as string;
-  } catch {
-    await supabase.from('surveys').delete().eq('id', copy.id);
-    throw new SurveyServiceError(message('duplicated'));
-  }
+  const { data, error } = await supabase.rpc('duplicate_survey', { p_survey_id: id });
+  if (error || !data) throw new SurveyServiceError(message('duplicated'));
+  const result = data as { id?: unknown; status?: unknown };
+  if (typeof result.id !== 'string' || result.status !== 'draft')
+    throw new SurveyServiceError('The database returned an invalid duplicate result.');
+  return result.id;
 }
 
 export async function loadSurveyEditor(

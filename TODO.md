@@ -8,7 +8,7 @@ This roadmap breaks the implementation into small, testable phases ordered from 
 
 ## Progress evidence — 2026-11-03
 
-Phases 1–9 are implemented and verified locally. Protected instructor routes now cover survey management, QR presentation and database-aggregated results; the isolated public client loads active content and submits anonymous responses only through secured RPCs. Results include accessible charts, exact counts, per-question percentages, unanswered indicators, refresh and a token-free CSV export. The initial migration was reported as manually applied, but migrations 002–004, remote SQL/RLS verification, real role-specific client checks, deployed QR scan, and the hosted end-to-end workflow remain manual. Evidence is recorded in [docs/PHASE_1_REPORT.md](docs/PHASE_1_REPORT.md), [docs/PHASE_2_REPORT.md](docs/PHASE_2_REPORT.md), [docs/REMOTE_DATABASE_VERIFICATION.md](docs/REMOTE_DATABASE_VERIFICATION.md), and [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md).
+Phases 1–12 are implemented and verified locally. Historical title/date filtering, active/closed/archived result retention, spreadsheet-safe CSV export, and atomic Draft duplication are covered by unit, browser, and disposable PostgreSQL checks. Excel 16.114.1 also passed a production-shaped CSV fixture check. The initial migration was reported as manually applied, but migrations 002–005, remote SQL/RLS verification, real role-specific client checks, deployed QR scan, and the hosted end-to-end workflow remain manual. Evidence is recorded in [docs/PHASE_1_REPORT.md](docs/PHASE_1_REPORT.md), [docs/PHASE_2_REPORT.md](docs/PHASE_2_REPORT.md), [docs/REMOTE_DATABASE_VERIFICATION.md](docs/REMOTE_DATABASE_VERIFICATION.md), and [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md).
 
 The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TODO_ORIGINAL.md). The public route is `/s/:slug` per UI.md/API.md; Phase 7 retains the original `:surveyId` wording for traceability. See [docs/TODO_STATUS.md](docs/TODO_STATUS.md) for the historical audit and current evidence.
 
@@ -160,10 +160,10 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 # Phase 10 — Historical Results
 
 - [x] Allow viewing results for Closed surveys.
-- [ ] Allow viewing results for Archived surveys.
-- [ ] Add filtering by date.
-- [ ] Add filtering by survey title.
-- [ ] Preserve all historical response data.
+- [x] Allow viewing results for Archived surveys.
+- [x] Add filtering by date.
+- [x] Add filtering by survey title.
+- [x] Preserve all historical response data.
 
 ---
 
@@ -175,18 +175,18 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 - [x] Include submission timestamp.
 - [x] Include each question and answer.
 - [x] Create safe CSV escaping.
-- [ ] Test export with spreadsheet applications.
+- [x] Test export with spreadsheet applications.
 
 ---
 
 # Phase 12 — Survey Duplication
 
-- [ ] Duplicate survey title and description.
-- [ ] Duplicate questions.
-- [ ] Duplicate answer choices.
-- [ ] Create the copy in Draft state.
-- [ ] Add "Copy of ..." naming.
-- [ ] Redirect to the editor after duplication.
+- [x] Duplicate survey title and description.
+- [x] Duplicate questions.
+- [x] Duplicate answer choices.
+- [x] Create the copy in Draft state.
+- [x] Add "Copy of ..." naming.
+- [x] Redirect to the editor after duplication.
 
 ---
 

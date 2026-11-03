@@ -109,6 +109,14 @@ Use: concise record of prompts, changes, verification and problems for the assig
 - **Problems, limits and manual checks remaining:** Browser Supabase responses were intercepted and no remote migration was applied. Spreadsheet application compatibility, high-volume/paginated CSV, archived-result viewing, hosted authorization and production counts remain unverified and were not marked complete.
 - **Next bounded phase:** Apply/verify migrations 002–004 remotely, then implement historical result filters or complete Phase 11 spreadsheet verification.
 
+## 2026-11-03 — Phases 10–12: history, CSV and duplication
+
+- **Prompt/scope:** Complete historical results, instructor-only CSV export and safe full-survey duplication, with filtering, data preservation, escaping/formula defenses, atomicity and evidence-backed checklist updates.
+- **Files/behavior changed:** Added composable inclusive title/date dashboard filters; strengthened formula detection for leading whitespace; expanded CSV fixtures and spreadsheet-test documentation; replaced client-side multi-write duplication with migration `202611030005`'s instructor-only atomic RPC; retained the existing editor redirect. No result access was made public and no response/answer row is copied or deleted.
+- **Validation performed and outcomes:** All 56 unit tests, 42 desktop/mobile Chromium tests, strict TypeScript, ESLint and production build passed. The full disposable PostgreSQL suite passed active/closed/archived result retention and atomic ordered duplication, including unauthorized and failed-operation paths. Excel 16.114.1 imported a four-row synthetic production-shaped CSV with quoted delimiters, embedded line breaks, Unicode and neutralized formula-like text. Formatting and diff checks also passed.
+- **Problems, limits and manual checks remaining:** The build retains its non-failing chunk-size warning. The spreadsheet check used synthetic data and the database checks used disposable PostgreSQL; migrations 002–005, hosted exports, live instructor authorization and production workflows remain unverified. Apply migration 005 only after earlier migrations, refresh PostgREST if necessary, then test with the real instructor account.
+- **Next bounded phase:** Apply and verify pending hosted migrations, then continue Phase 13 UI/accessibility polish.
+
 ## Later phase entry format
 
 - **Prompt/scope:**

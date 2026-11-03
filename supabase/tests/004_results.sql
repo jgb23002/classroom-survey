@@ -70,6 +70,25 @@ begin
        or (v_results #>> '{questions,0,choices,1,count}')::integer <> 0 then
         raise exception 'Aggregate counts, unanswered or zero choice incorrect: %', v_results;
     end if;
+
+    update public.surveys set status = 'active'
+     where id = '11000000-0000-4000-8000-000000000001';
+    if (public.get_survey_results('11000000-0000-4000-8000-000000000001') #>> '{survey,status}') <> 'active' then
+        raise exception 'Active historical results unavailable';
+    end if;
+    perform public.close_survey('11000000-0000-4000-8000-000000000001');
+    if (public.get_survey_results('11000000-0000-4000-8000-000000000001') #>> '{survey,status}') <> 'closed' then
+        raise exception 'Closed historical results unavailable';
+    end if;
+    update public.surveys set status = 'archived'
+     where id = '11000000-0000-4000-8000-000000000001';
+    v_results := public.get_survey_results('11000000-0000-4000-8000-000000000001');
+    if (v_results #>> '{survey,status}') <> 'archived'
+       or (v_results ->> 'response_count')::integer <> 3
+       or (select count(*) from public.answers a join public.responses r on r.id = a.response_id where r.survey_id = '11000000-0000-4000-8000-000000000001') <> 5 then
+        raise exception 'Archive changed or hid historical responses';
+    end if;
+
     v_export := public.export_survey_responses('11000000-0000-4000-8000-000000000001');
     if jsonb_array_length(v_export -> 'responses') <> 3
        or v_export::text like '%anonymous_token%'
@@ -80,4 +99,4 @@ end;
 $$;
 
 rollback;
-select 'PASS: instructor-only results counts, zero choice, unanswered and token-free export' as verification_result;
+select 'PASS: instructor-only active/closed/archived results, preserved counts, zero choice, unanswered and token-free export' as verification_result;

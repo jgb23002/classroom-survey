@@ -87,7 +87,22 @@ It is transaction-wrapped and rolls back its fixtures. Require the final
 message. Run `notify pgrst, 'reload schema';` if PostgREST has not yet exposed
 the new RPC signatures.
 
-## 7. Provision the approved instructor
+## 7. Apply the Phase 12 duplication migration
+
+Run the complete
+[`202611030005_atomic_survey_duplication.sql`](../supabase/migrations/202611030005_atomic_survey_duplication.sql)
+file once after migration 004. It adds the authenticated-only
+`duplicate_survey(uuid)` RPC. The function independently requires the trusted
+instructor claim and copies survey metadata, ordered questions and ordered
+choices in one transaction with fresh IDs. It always creates a Draft, omits the
+public slug and never copies responses or answers.
+
+Then run [`005_duplication.sql`](../supabase/tests/005_duplication.sql) in SQL
+Editor. It is transaction-wrapped and rolls back its fixtures. Require its
+final `PASS` message. Run `notify pgrst, 'reload schema';` if PostgREST has not
+yet exposed the function.
+
+## 8. Provision the approved instructor
 
 The application does not treat every signed-in user as an instructor. RLS and privileged RPCs require both a real Supabase Auth user ID and the trusted server-managed claim `app_metadata.role = instructor`.
 
@@ -116,7 +131,7 @@ update auth.users
 
 Never authorize from `user_metadata`, an email string, a frontend environment variable, or the generic `authenticated` role.
 
-## 8. Record the remote result before checking TODO verification tasks
+## 9. Record the remote result before checking TODO verification tasks
 
 Only after the remote migration and verification succeed should these TODO items be checked:
 

@@ -10,7 +10,7 @@ export function formatResultPercentage(value: number): string {
 }
 
 function spreadsheetSafe(value: string): string {
-  return /^[=+\-@]/.test(value) ? `'${value}` : value;
+  return /^[\t\r ]*[=+\-@]/.test(value) ? `'${value}` : value;
 }
 
 function csvCell(value: string | number): string {

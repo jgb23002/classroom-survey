@@ -30,6 +30,8 @@ export function DashboardPage() {
   const [surveys, setSurveys] = useState<SurveySummary[]>([]);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<SurveyStatusFilter>('all');
+  const [createdFrom, setCreatedFrom] = useState('');
+  const [createdTo, setCreatedTo] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [mutationError, setMutationError] = useState('');
@@ -67,8 +69,8 @@ export function DashboardPage() {
   }, []);
 
   const visibleSurveys = useMemo(
-    () => filterSurveys(surveys, search, status),
-    [search, status, surveys],
+    () => filterSurveys(surveys, search, status, createdFrom, createdTo),
+    [createdFrom, createdTo, search, status, surveys],
   );
 
   async function mutate(survey: SurveySummary, operation: () => Promise<void>) {
@@ -151,7 +153,8 @@ export function DashboardPage() {
     }
   }
 
-  const filtered = search.trim() !== '' || status !== 'all';
+  const filtered =
+    search.trim() !== '' || status !== 'all' || createdFrom !== '' || createdTo !== '';
 
   return (
     <section aria-labelledby="dashboard-title">
@@ -169,7 +172,7 @@ export function DashboardPage() {
       </div>
 
       <div className="mt-8 rounded-2xl border border-line bg-white p-4 sm:p-5">
-        <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_14rem_auto] md:items-end">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_11rem_10rem_10rem_auto] lg:items-end">
           <div>
             <label htmlFor="survey-search" className="form-label">
               Search by title
@@ -200,12 +203,40 @@ export function DashboardPage() {
               ))}
             </select>
           </div>
+          <div>
+            <label htmlFor="created-from" className="form-label">
+              Created from
+            </label>
+            <input
+              id="created-from"
+              type="date"
+              className="form-input"
+              value={createdFrom}
+              max={createdTo || undefined}
+              onChange={(event) => setCreatedFrom(event.target.value)}
+            />
+          </div>
+          <div>
+            <label htmlFor="created-to" className="form-label">
+              Created through
+            </label>
+            <input
+              id="created-to"
+              type="date"
+              className="form-input"
+              value={createdTo}
+              min={createdFrom || undefined}
+              onChange={(event) => setCreatedTo(event.target.value)}
+            />
+          </div>
           <Button
             variant="secondary"
             disabled={!filtered}
             onClick={() => {
               setSearch('');
               setStatus('all');
+              setCreatedFrom('');
+              setCreatedTo('');
             }}
           >
             Clear filters
@@ -255,6 +286,8 @@ export function DashboardPage() {
             onClick={() => {
               setSearch('');
               setStatus('all');
+              setCreatedFrom('');
+              setCreatedTo('');
             }}
           >
             Clear filters
