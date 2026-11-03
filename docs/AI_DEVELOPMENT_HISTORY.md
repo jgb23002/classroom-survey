@@ -85,6 +85,14 @@ Use: concise record of prompts, changes, verification and problems for the assig
 - **Problems, limits and manual checks remaining:** The first full browser run served the stale pre-build `dist` placeholder; rebuilding corrected the test environment and the focused rerun passed. Browser API data was intercepted, not fabricated by runtime code. The configured hosted migration/session, real lifecycle/count refresh, production Cloudflare origin and physical QR scan remain unverified and are not marked complete outside Phase 6 implementation.
 - **Next bounded phase:** Apply/verify the Phase 5 RPC remotely, deploy or use the eventual public origin for a phone scan, then implement the anonymous student survey and submission workflow.
 
+## 2026-11-03 — Phase 7: anonymous student survey
+
+- **Prompt/scope:** Implement the complete no-login `/s/:slug` experience with active-only loading, ordered accessible questions, required answers, atomic anonymous submission, friendly terminal/error states, mobile layout and evidence-backed status updates.
+- **Files/behavior changed:** Replaced the student placeholder with a single-column radio form and success/duplicate/closed/not-found/network states; added typed public payload parsing and submission service operations using only the isolated client and `get_public_survey`/`submit_survey_response`; added cryptographically random per-slug token and post-confirmation success persistence with an in-memory storage fallback. No schema, RLS, instructor route or direct table-write permission changed.
+- **Validation performed and outcomes:** The disposable PostgreSQL suite passed active-only reads, no anonymous result access/direct writes, database answer validation, atomic insertion, duplicate uniqueness and post-close rejection. Unit suite reached 43 tests, covering ordered parsing, submission results and documented error mapping. The rebuilt production bundle passed 38 desktop/mobile Chromium tests, including load, inline validation, 44px submit target, pending disable/text, exact RPC payload, absence of response/answer REST writes, token/success persistence, reload duplicate state, confirmation, closed, not-found and network states.
+- **Problems, limits and manual checks remaining:** Browser API responses were intercepted; no real hosted student response was inserted. The exact route remains `/s/:slug` per UI/API despite the original TODO's `:surveyId` wording. Hosted anonymous RLS/RPC behavior, physical devices, a closure race through the public API and the 200-student target remain unverified.
+- **Next bounded phase:** Verify the deployed instructor-to-student flow, then implement the instructor-only results aggregation and charts.
+
 ## Later phase entry format
 
 - **Prompt/scope:**

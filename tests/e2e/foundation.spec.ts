@@ -469,17 +469,147 @@ for (const [path] of routes) {
   });
 }
 
-test('student route has no instructor navigation or pretend submission controls', async ({
-  page,
-}) => {
-  await page.goto('/s/test-slug');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Survey access is being prepared',
-  );
+const publicSurvey = {
+  state: 'active',
+  survey: {
+    id: '10000000-0000-4000-8000-000000000080',
+    title: 'Recursion Concept Check',
+    description: 'Quick understanding check for CSE students',
+  },
+  questions: [
+    {
+      id: '20000000-0000-4000-8000-000000000081',
+      question_text: 'What is required for a recursive function?',
+      question_type: 'multiple_choice',
+      position: 1,
+      choices: [
+        { id: '30000000-0000-4000-8000-000000000081', choice_text: 'A base case', position: 1 },
+        { id: '30000000-0000-4000-8000-000000000082', choice_text: 'A pointer', position: 2 },
+      ],
+    },
+    {
+      id: '20000000-0000-4000-8000-000000000082',
+      question_text: 'Every recursive function needs a stopping condition.',
+      question_type: 'true_false',
+      position: 2,
+      choices: [
+        { id: '30000000-0000-4000-8000-000000000083', choice_text: 'True', position: 1 },
+        { id: '30000000-0000-4000-8000-000000000084', choice_text: 'False', position: 2 },
+      ],
+    },
+  ],
+};
+
+test('student loads, validates, and submits anonymously through one RPC', async ({ page }) => {
+  let submissionBody: Record<string, unknown> | undefined;
+  const directWrites: string[] = [];
+  page.on('request', (request) => {
+    if (/\/rest\/v1\/(responses|answers)(?:\?|$)/.test(request.url()))
+      directWrites.push(request.url());
+  });
+  await page.route('**/rest/v1/rpc/get_public_survey', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(publicSurvey),
+    });
+  });
+  await page.route('**/rest/v1/rpc/submit_survey_response', async (route) => {
+    submissionBody = route.request().postDataJSON() as Record<string, unknown>;
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ success: true, response_id: '40000000-0000-4000-8000-000000000080' }),
+    });
+  });
+  await page.goto('/s/recursion-check');
+  await expect(page.getByRole('heading', { name: 'Recursion Concept Check' })).toBeVisible();
+  await expect(page.getByText('Quick understanding check for CSE students')).toBeVisible();
   await expect(page.getByRole('navigation')).toHaveCount(0);
   await expect(page.getByRole('link', { name: /login|dashboard/i })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: /submit/i })).toHaveCount(0);
-  await expect(page.getByRole('main')).toContainText('You won’t need an account');
+  await page.getByRole('button', { name: 'Submit response' }).click();
+  await expect(page.getByText('Choose one answer for this question.')).toHaveCount(2);
+  expect(submissionBody).toBeUndefined();
+
+  await page.getByLabel('A base case').check();
+  await page.getByLabel('True', { exact: true }).check();
+  const submit = page.getByRole('button', { name: 'Submit response' });
+  expect((await submit.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  await submit.click();
+  await expect(page.getByRole('button', { name: 'Submitting…' })).toBeDisabled();
+  await expect(page.getByRole('heading', { name: 'Thank you!' })).toBeVisible();
+
+  expect(submissionBody?.p_survey_id).toBe(publicSurvey.survey.id);
+  expect(submissionBody?.p_anonymous_token).toEqual(expect.any(String));
+  expect(submissionBody?.p_answers).toEqual([
+    {
+      question_id: publicSurvey.questions[0].id,
+      choice_id: publicSurvey.questions[0].choices[0].id,
+    },
+    {
+      question_id: publicSurvey.questions[1].id,
+      choice_id: publicSurvey.questions[1].choices[0].id,
+    },
+  ]);
+  expect(
+    await page.evaluate(() => localStorage.getItem('classroom-survey:token:recursion-check')),
+  ).toBe(submissionBody?.p_anonymous_token);
+  expect(
+    await page.evaluate(() => localStorage.getItem('classroom-survey:submitted:recursion-check')),
+  ).toBe('true');
+  expect(directWrites).toEqual([]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true,
+  );
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Already submitted' })).toBeVisible();
+});
+
+test('student sees duplicate, closed, not-found, and network states', async ({ page }) => {
+  await page.route('**/rest/v1/rpc/get_public_survey', async (route) => {
+    const slug = (route.request().postDataJSON() as { p_slug: string }).p_slug;
+    if (slug === 'offline-load') {
+      await route.fulfill({
+        status: 503,
+        contentType: 'application/json',
+        body: JSON.stringify({ code: 'PGRST000', message: 'Failed to fetch' }),
+      });
+      return;
+    }
+    const data =
+      slug === 'closed'
+        ? { state: 'closed' }
+        : slug === 'missing'
+          ? { state: 'not_found' }
+          : publicSurvey;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(data),
+    });
+  });
+  await page.route('**/rest/v1/rpc/submit_survey_response', async (route) => {
+    await route.fulfill({
+      status: 409,
+      contentType: 'application/json',
+      body: JSON.stringify({ code: '23505', message: 'DUPLICATE_RESPONSE' }),
+    });
+  });
+
+  await page.goto('/s/duplicate');
+  await page.getByLabel('A base case').check();
+  await page.getByLabel('True', { exact: true }).check();
+  await page.getByRole('button', { name: 'Submit response' }).click();
+  await expect(page.getByRole('heading', { name: 'Already submitted' })).toBeVisible();
+
+  await page.goto('/s/closed');
+  await expect(page.getByRole('heading', { name: 'Survey closed' })).toBeVisible();
+  await page.goto('/s/missing');
+  await expect(page.getByRole('heading', { name: 'Survey not found' })).toBeVisible();
+  await page.goto('/s/offline-load');
+  await expect(page.getByRole('heading', { name: 'Survey unavailable' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
 });
 
 test('landing styles compile, respect the viewport, and unknown routes show a 404 page', async ({

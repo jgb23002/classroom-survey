@@ -8,7 +8,7 @@ This roadmap breaks the implementation into small, testable phases ordered from 
 
 ## Progress evidence — 2026-11-03
 
-Phases 1–6 are implemented and verified locally. The protected dashboard reads real Supabase survey data, the survey editor persists stable question/choice IDs through an atomic save RPC, and the presentation page provides an origin-derived public URL, real QR PNG, response-count polling, and authorized activation/closure. Active, archived, and closed-with-responses content is protected from editing. Results and student participation remain later phases. The initial migration was reported as manually applied, but the new Phase 5 migration, rollback-safe remote SQL/RLS suite, real role-specific client verification, deployed QR scan, and hosted lifecycle flow remain manual. Evidence is recorded in [docs/PHASE_1_REPORT.md](docs/PHASE_1_REPORT.md), [docs/PHASE_2_REPORT.md](docs/PHASE_2_REPORT.md), [docs/REMOTE_DATABASE_VERIFICATION.md](docs/REMOTE_DATABASE_VERIFICATION.md), and [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md).
+Phases 1–7 are implemented and verified locally. The protected dashboard reads real Supabase survey data, the survey editor persists stable question/choice IDs through an atomic save RPC, the presentation page provides an origin-derived QR workflow, and the isolated public client loads active content and submits complete anonymous responses only through secured RPCs. Active, archived, and closed-with-responses content is protected from editing. Results remain a later phase. The initial migration was reported as manually applied, but the Phase 5 migration, rollback-safe remote SQL/RLS suite, real role-specific client verification, deployed QR scan, and hosted instructor-to-student workflow remain manual. Evidence is recorded in [docs/PHASE_1_REPORT.md](docs/PHASE_1_REPORT.md), [docs/PHASE_2_REPORT.md](docs/PHASE_2_REPORT.md), [docs/REMOTE_DATABASE_VERIFICATION.md](docs/REMOTE_DATABASE_VERIFICATION.md), and [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md).
 
 The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TODO_ORIGINAL.md). The public route is `/s/:slug` per UI.md/API.md; Phase 7 retains the original `:surveyId` wording for traceability. See [docs/TODO_STATUS.md](docs/TODO_STATUS.md) for the historical audit and current evidence.
 
@@ -117,28 +117,28 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 
 # Phase 7 — Student Survey Page
 
-- [ ] Create the public route `/s/:surveyId`.
-- [ ] Load the requested active survey.
-- [ ] Show an error if the survey does not exist.
-- [ ] Show a message if the survey is closed.
-- [ ] Render survey title and description.
-- [ ] Render Multiple Choice questions.
-- [ ] Render True / False questions.
-- [ ] Validate required answers.
-- [ ] Add Submit button.
-- [ ] Store response and answers in Supabase.
-- [ ] Show a submission confirmation page.
-- [ ] Make the entire experience mobile friendly.
+- [x] Create the public route `/s/:surveyId`.
+- [x] Load the requested active survey.
+- [x] Show an error if the survey does not exist.
+- [x] Show a message if the survey is closed.
+- [x] Render survey title and description.
+- [x] Render Multiple Choice questions.
+- [x] Render True / False questions.
+- [x] Validate required answers.
+- [x] Add Submit button.
+- [x] Store response and answers in Supabase.
+- [x] Show a submission confirmation page.
+- [x] Make the entire experience mobile friendly.
 
 ---
 
 # Phase 8 — Duplicate Submission Protection
 
-- [ ] Generate an anonymous browser token.
-- [ ] Store the token in local storage.
-- [ ] Save the token with each response.
+- [x] Generate an anonymous browser token.
+- [x] Store the token in local storage.
+- [x] Save the token with each response.
 - [x] Prevent the same token from submitting twice to the same survey.
-- [ ] Show a friendly message if a duplicate submission is attempted.
+- [x] Show a friendly message if a duplicate submission is attempted.
 - [x] Add a database uniqueness constraint if appropriate.
 
 ---
