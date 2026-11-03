@@ -1,0 +1,18 @@
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+.sites-runtime/
+package-lock.json
+.env*
+# Preserve supplied specifications and the original TODO snapshot byte-for-byte.
+ASSIGNMENT.md
+SPEC.md
+DATABASE.md
+API.md
+UI.md
+TODO.md
+docs/TODO_ORIGINAL.md
+docs/IMPLEMENTATION_PLAN.md
+docs/DECISIONS.md

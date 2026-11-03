@@ -1,0 +1,80 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Aptos', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-editorial: Georgia, 'Times New Roman', serif;
+  --color-paper: #f7f8f5;
+  --color-ink: #202d2a;
+  --color-muted: #586760;
+  --color-line: #dde3dd;
+  --color-brand-50: #edf4ef;
+  --color-brand-100: #d4e5da;
+  --color-brand-200: #b6d8c1;
+  --color-brand-700: #357359;
+  --color-brand-800: #214f3e;
+  --color-brand-900: #173d2e;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply m-0 bg-paper font-sans text-ink antialiased;
+  }
+  button:not(:disabled),
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-brand-700);
+    outline-offset: 4px;
+  }
+  main:focus {
+    outline: none;
+  }
+  ::selection {
+    background: var(--color-brand-200);
+    color: var(--color-brand-900);
+  }
+  [id] {
+    scroll-margin-top: 1.5rem;
+  }
+}
+
+@layer components {
+  .page-container {
+    @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
+  }
+  .page-title {
+    @apply text-3xl leading-tight font-semibold tracking-tight sm:text-4xl;
+  }
+  .eyebrow {
+    @apply text-xs font-semibold tracking-[0.16em] text-brand-800 uppercase;
+  }
+  .text-link {
+    @apply inline-flex min-h-11 items-center gap-2 rounded-md text-sm font-semibold text-brand-800 underline-offset-4 hover:underline;
+  }
+  .form-label {
+    @apply mb-2 block text-sm font-medium text-ink;
+  }
+  .form-input {
+    @apply min-h-12 w-full rounded-xl border border-line bg-white px-3 py-2 text-base disabled:cursor-not-allowed disabled:bg-stone-50;
+  }
+  .skip-link {
+    @apply fixed top-3 left-3 z-50 -translate-y-24 rounded-lg bg-brand-900 px-5 py-3 font-semibold text-white focus:translate-y-0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
