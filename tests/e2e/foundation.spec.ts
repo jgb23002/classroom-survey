@@ -100,6 +100,148 @@ test('ordinary authenticated user cannot enter instructor routes', async ({ page
   await expect(page.getByRole('alert')).toContainText('not authorized as an instructor');
 });
 
+const dashboardRows = [
+  {
+    id: '10000000-0000-4000-8000-000000000001',
+    title: 'Recursion Concept Check',
+    description: 'A quick check before class ends',
+    status: 'draft',
+    public_slug: null,
+    created_at: '2026-11-03T14:00:00.000Z',
+    updated_at: '2026-11-03T14:00:00.000Z',
+    responses: [{ count: 0 }],
+  },
+  {
+    id: '10000000-0000-4000-8000-000000000002',
+    title: 'Active Pointer Poll',
+    description: null,
+    status: 'active',
+    public_slug: 'active-pointer-poll',
+    created_at: '2026-11-02T14:00:00.000Z',
+    updated_at: '2026-11-02T14:00:00.000Z',
+    responses: [{ count: 3 }],
+  },
+  {
+    id: '10000000-0000-4000-8000-000000000003',
+    title: 'Closed Arrays Review',
+    description: 'Historical results',
+    status: 'closed',
+    public_slug: 'closed-arrays-review',
+    created_at: '2026-11-01T14:00:00.000Z',
+    updated_at: '2026-11-01T14:00:00.000Z',
+    responses: [{ count: 12 }],
+  },
+  {
+    id: '10000000-0000-4000-8000-000000000004',
+    title: 'Archived Graphs Check',
+    description: 'Stored for reference',
+    status: 'archived',
+    public_slug: 'archived-graphs-check',
+    created_at: '2026-10-31T14:00:00.000Z',
+    updated_at: '2026-10-31T14:00:00.000Z',
+    responses: [{ count: 7 }],
+  },
+];
+
+async function openAuthenticatedDashboard(page: import('@playwright/test').Page) {
+  await page.route('**/auth/v1/token?grant_type=password', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(authResponse('instructor')),
+    });
+  });
+  await page.goto('/login');
+  await page.getByLabel('Email', { exact: true }).fill('instructor@example.test');
+  await page.getByLabel('Password', { exact: true }).fill('synthetic-password');
+  await page.getByRole('button', { name: 'Log in', exact: true }).click();
+  await expect(page).toHaveURL('/dashboard');
+}
+
+test('dashboard renders real response shapes and filters by title and status', async ({ page }) => {
+  await page.route('**/rest/v1/surveys*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(dashboardRows),
+    });
+  });
+  await openAuthenticatedDashboard(page);
+
+  await expect(page.getByRole('heading', { name: 'Recursion Concept Check' })).toBeVisible();
+  await expect(page.getByText('draft', { exact: true })).toBeVisible();
+  await expect(page.getByText('active', { exact: true })).toBeVisible();
+  await expect(page.getByText('closed', { exact: true })).toBeVisible();
+  await expect(page.getByText('archived', { exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'New survey' }).first()).toBeVisible();
+
+  await page.getByLabel('Search by title').fill('ARRAYS');
+  await expect(page.getByRole('heading', { name: 'Closed Arrays Review' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Recursion Concept Check' })).toHaveCount(0);
+  await page.getByLabel('Status').selectOption('draft');
+  await expect(page.getByRole('heading', { name: 'No matching surveys' })).toBeVisible();
+  await page.getByRole('button', { name: 'Clear filters' }).first().click();
+  await expect(page.getByRole('heading', { name: 'Recursion Concept Check' })).toBeVisible();
+
+  const activeActions = page.getByLabel('Actions for Active Pointer Poll');
+  await expect(activeActions.getByRole('button', { name: 'Close' })).toBeVisible();
+  await expect(activeActions.getByRole('link', { name: 'Present QR' })).toBeVisible();
+  await expect(activeActions.getByRole('link', { name: 'View results' })).toBeVisible();
+  await expect(activeActions.getByRole('button', { name: 'Delete' })).toHaveCount(0);
+  const closedActions = page.getByLabel('Actions for Closed Arrays Review');
+  await expect(closedActions.getByRole('link', { name: 'Edit' })).toHaveCount(0);
+  await expect(closedActions.getByRole('button', { name: 'Archive' })).toBeVisible();
+});
+
+test('dashboard confirms close and refreshes after the RPC mutation', async ({ page }) => {
+  let listRequests = 0;
+  let closeRequests = 0;
+  await page.route('**/rest/v1/surveys*', async (route) => {
+    listRequests += 1;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(dashboardRows),
+    });
+  });
+  await page.route('**/rest/v1/rpc/close_survey', async (route) => {
+    closeRequests += 1;
+    await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+  });
+  page.once('dialog', async (dialog) => {
+    expect(dialog.message()).toContain('Students will no longer be able to submit');
+    await dialog.accept();
+  });
+  await openAuthenticatedDashboard(page);
+  await page
+    .getByLabel('Actions for Active Pointer Poll')
+    .getByRole('button', { name: 'Close' })
+    .click();
+  await expect.poll(() => closeRequests).toBe(1);
+  await expect.poll(() => listRequests).toBeGreaterThan(1);
+});
+
+test('dashboard shows loading, error retry, and empty states', async ({ page }) => {
+  let requests = 0;
+  await page.route('**/rest/v1/surveys*', async (route) => {
+    requests += 1;
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    if (requests === 1) {
+      await route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: '{"message":"synthetic"}',
+      });
+    } else {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+    }
+  });
+  await openAuthenticatedDashboard(page);
+  await expect(page.getByRole('alert')).toContainText('Dashboard unavailable');
+  await page.getByRole('button', { name: 'Try again' }).click();
+  await expect(page.getByRole('heading', { name: 'No surveys yet' })).toBeVisible();
+});
+
 const routes = [
   ['/dashboard', 'Dashboard'],
   ['/surveys/new', 'New survey'],

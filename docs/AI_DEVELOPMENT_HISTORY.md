@@ -53,6 +53,14 @@ Use: concise record of prompts, changes, verification and problems for the assig
 - **Problems, limits and manual checks remaining:** The remote SQL/RLS suite and real role-specific client tests remain unrun. The reported remote migration application and reachable Auth endpoint do not prove hosted policy behavior. No end-to-end survey workflow, second browser engine, load test, GitHub/Cloudflare deployment or production test exists.
 - **Next bounded phase:** Implement a transactional instructor draft-save operation and a real create/edit survey form for multiple-choice and true/false questions, with service/types and focused tests.
 
+## 2026-11-03 — Phase 4: complete instructor dashboard
+
+- **Prompt/scope:** Build the protected responsive `/dashboard` using real Supabase data; add survey metadata/statuses, search/filter/reset, state-aware actions, confirmations, async/empty/error states, reusable services and evidence-backed TODO updates.
+- **Files/behavior changed:** Replaced the dashboard placeholder with responsive cards and controls; added survey types, status badge/card components, reusable list/lifecycle/duplicate/archive/delete service operations, filtering/date utilities and tests. Activation/closure use existing RPCs. Duplicate copies metadata/questions/choices into a draft and cleans up the copy on partial failure. The UI explicitly labels Phase 5/6/9 route dependencies.
+- **Validation performed and outcomes:** Formatting, strict TypeScript, ESLint and production build passed. Unit suite: 27 passed. Playwright: 28 passed across desktop and mobile Chromium, covering Supabase response shapes, status/action rendering, case-insensitive combined filters, clear filters, close confirmation/RPC/list refresh, loading, error/retry, empty/no-match states, auth and responsive route behavior. The build emitted a non-failing chunk-size warning.
+- **Problems, limits and manual checks remaining:** Browser Supabase calls used intercepted protocol-faithful responses; the real hosted dashboard was not exercised without the user's Auth credentials. New/Edit, QR presentation and results pages remain later-phase placeholders. Application-level duplication is permitted by API.md but is not a single database transaction; a future mutation RPC can strengthen it before high-risk production use.
+- **Next bounded phase:** Implement the transactional survey editor/save workflow so New and Edit become functional and activation can be exercised end to end.
+
 ## Later phase entry format
 
 - **Prompt/scope:**

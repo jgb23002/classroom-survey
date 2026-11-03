@@ -53,31 +53,31 @@ The browser tests require Playwright Chromium. If it is not installed, run `npx 
 
 ## Routes
 
-| Route                  | Phase 1 page                                                            |
-| ---------------------- | ----------------------------------------------------------------------- |
-| `/`                    | Landing page                                                            |
-| `/login`               | Disabled instructor login shell and configuration availability feedback |
-| `/dashboard`           | Dashboard placeholder                                                   |
-| `/surveys/new`         | New-survey placeholder                                                  |
-| `/surveys/:id/edit`    | Survey-editor placeholder                                               |
-| `/surveys/:id/present` | Presentation placeholder                                                |
-| `/surveys/:id/results` | Results placeholder                                                     |
-| `/s/:slug`             | Minimal public student placeholder, with no instructor navigation       |
-| Any unmatched path     | Application not-found page                                              |
+| Route                  | Current behavior                                                  |
+| ---------------------- | ----------------------------------------------------------------- |
+| `/`                    | Landing page                                                      |
+| `/login`               | Supabase email/password instructor login                          |
+| `/dashboard`           | Protected, database-backed instructor dashboard                   |
+| `/surveys/new`         | New-survey placeholder; Phase 5 dependency                        |
+| `/surveys/:id/edit`    | Survey-editor placeholder; Phase 5 dependency                     |
+| `/surveys/:id/present` | Presentation placeholder; Phase 6 dependency                      |
+| `/surveys/:id/results` | Results placeholder; Phase 9 dependency                           |
+| `/s/:slug`             | Minimal public student placeholder, with no instructor navigation |
+| Any unmatched path     | Application not-found page                                        |
 
-Instructor route shells currently contain no private data or active survey operations. They are not a completed authentication boundary; real Supabase Auth session protection and database RLS must be implemented and tested before connecting protected data. Do not deploy these shells as a working survey app.
+The dashboard lists real surveys newest-first, counts responses, filters by title/status and uses state-aware actions. Activation/closure use secure RPCs; duplication, archive and deletion use instructor-authorized Supabase operations. Delete confirmations warn about cascading response loss. The editor, QR and results routes remain clearly identified later-phase dependencies.
 
 ## Source layout
 
 ```text
 src/
   components/       Shared UI and layouts
-  contexts/         Configuration state (Auth context comes later)
+  contexts/         Configuration and instructor Auth state
   database/         Reserved for generated types after real database setup
   hooks/            Configuration access and page titles
   lib/              Lazy Supabase clients
   pages/            Modular route pages
-  services/         Reserved for typed API/RPC operations
+  services/         Reusable Auth and survey data/RPC operations
   types/            Shared application types
   utilities/        Environment validation and styling helpers
 supabase/

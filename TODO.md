@@ -8,7 +8,7 @@ This roadmap breaks the implementation into small, testable phases ordered from 
 
 ## Progress evidence — 2026-11-03
 
-Phase 1, the local Phase 2 database implementation, and Phase 3 instructor authentication are complete. A configured Supabase Auth endpoint was reached successfully and the migration was reported as manually applied, but the rollback-safe remote SQL/RLS suite and real role-specific client verification remain pending. Database lifecycle and submission invariants passed disposable PostgreSQL tests. All dashboard, survey editor, presentation, student survey, results, CSV, and deployment screens remain placeholders or unimplemented. Evidence is recorded in [docs/PHASE_1_REPORT.md](docs/PHASE_1_REPORT.md), [docs/PHASE_2_REPORT.md](docs/PHASE_2_REPORT.md), [docs/REMOTE_DATABASE_VERIFICATION.md](docs/REMOTE_DATABASE_VERIFICATION.md), and [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md).
+Phase 1, the local Phase 2 database implementation, Phase 3 instructor authentication, and Phase 4 instructor dashboard are complete. The protected dashboard reads real Supabase survey data and provides responsive filtering plus state-aware lifecycle, duplicate, archive, and delete actions. Editor, QR presentation, and results links explicitly lead to later-phase placeholders. A configured Supabase Auth endpoint was reached successfully and the migration was reported as manually applied, but rollback-safe remote SQL/RLS and real role-specific client verification remain pending. Evidence is recorded in [docs/PHASE_1_REPORT.md](docs/PHASE_1_REPORT.md), [docs/PHASE_2_REPORT.md](docs/PHASE_2_REPORT.md), [docs/REMOTE_DATABASE_VERIFICATION.md](docs/REMOTE_DATABASE_VERIFICATION.md), and [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md).
 
 The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TODO_ORIGINAL.md). The public route is `/s/:slug` per UI.md/API.md; Phase 7 retains the original `:surveyId` wording for traceability. See [docs/TODO_STATUS.md](docs/TODO_STATUS.md) for the historical audit and current evidence.
 
@@ -62,20 +62,20 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 
 # Phase 4 — Instructor Dashboard
 
-- [ ] Create the dashboard layout.
-- [ ] Load surveys from Supabase.
-- [ ] Display survey title, status, and creation date.
-- [ ] Add status badges for Draft, Active, Closed, and Archived.
-- [ ] Add a New Survey button.
-- [ ] Add Edit action.
-- [ ] Add Duplicate action.
-- [ ] Add Delete action.
-- [ ] Add Archive action.
-- [ ] Add View Results action.
-- [ ] Add Activate action.
-- [ ] Add Close action.
-- [ ] Add search by survey title.
-- [ ] Add filtering by status.
+- [x] Create the dashboard layout.
+- [x] Load surveys from Supabase.
+- [x] Display survey title, status, and creation date.
+- [x] Add status badges for Draft, Active, Closed, and Archived.
+- [x] Add a New Survey button.
+- [x] Add Edit action.
+- [x] Add Duplicate action.
+- [x] Add Delete action.
+- [x] Add Archive action.
+- [x] Add View Results action.
+- [x] Add Activate action.
+- [x] Add Close action.
+- [x] Add search by survey title.
+- [x] Add filtering by status.
 
 ---
 
