@@ -20,6 +20,11 @@ test-results/
 .sites-runtime/
 *.tsbuildinfo
 
+# Browser/session test credentials and local Supabase CLI state
+playwright/.auth/
+*.storage-state.json
+supabase/.temp/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

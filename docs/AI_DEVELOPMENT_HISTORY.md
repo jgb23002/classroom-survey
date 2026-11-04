@@ -141,6 +141,14 @@ Use: concise record of prompts, changes, verification and problems for the assig
 - **Problems, limits and manual checks remaining:** Apply existing migrations 004 then 005 in SQL Editor and verify with the real instructor session. Configure/redeploy a public HTTPS application origin, or explicitly expose a same-network development server, before testing on a phone. Remote instructor execution, existing-response aggregation and physical QR scanning remain unverified.
 - **Next bounded phase:** Apply the two missing remote migrations, configure the public origin, then run the three documented manual workflows before Phase 15 deployment is considered verified.
 
+## 2026-11-03 — GitHub and assignment readiness audit
+
+- **Prompt/scope:** Inspect tracked/staged content, specifications, migrations, README, TODO evidence, ignored artifacts, secrets/private information, file sizes and final quality checks; fix repository-local readiness problems.
+- **Files/behavior changed:** Added ordered database/deployment instructions to README, redacted two machine-specific paths from the Phase 1 report, expanded ignores for browser auth state and local Supabase CLI state, added a factual development summary, and replaced the empty evidence placeholder with a privacy-safe screenshot checklist. Added `docs/GITHUB_READINESS.md` with verified status and external blockers.
+- **Validation performed and outcomes:** All supplied specification/original-TODO SHA-256 hashes matched. Every migration and source file is tracked; the lockfile is present; no ignored runtime/configuration path is tracked; no tracked binary/large file or screenshot exists. Current index and Git history scans found no unclassified credential pattern, and the two local `.env` values do not occur in history. Production npm audit reported zero vulnerabilities. ESLint, TypeScript, 67/67 unit tests, 88/88 Chromium/Firefox browser tests, Prettier, production build and all five disposable PostgreSQL verification stages passed.
+- **Problems, limits and manual checks remaining:** The full dependency audit retains 13 moderate `minimatch` advisories in lint-only development tooling; npm offers only a breaking forced downgrade, so it was not applied. The Vite build retains its non-failing chunk warning. Hosted migrations 004/005, Cloudflare deployment, production workflows and the four required sanitized database screenshots remain incomplete. Earlier Git commits contain two now-redacted local cache paths; they contain no credential or student data, and history was not rewritten.
+- **Next bounded phase:** Apply the missing hosted migrations, deploy through Cloudflare Pages, complete production/device checks, add sanitized database evidence, and then update only the corresponding TODO items.
+
 ## Later phase entry format
 
 - **Prompt/scope:**
