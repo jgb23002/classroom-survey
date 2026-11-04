@@ -18,7 +18,7 @@ Sources: TODO phases 1–15; assignment §7.A; user preservation/evidence rules.
 
 Contradiction: 123 of 164 supplied tasks are checked, including database and deployment tasks, while the current checkout has no application source, migrations, dependencies or Git repository. The Supabase-project task is unchecked even though its table tasks are checked. External account/project state is unknown.
 
-Resolution: preserve `TODO.md` byte-for-byte and also keep `docs/TODO_ORIGINAL.md` as the received snapshot. Record the actual audit in `docs/TODO_STATUS.md`; do not reset or add original marks, and do not treat original checks as verified work. The initial folder structure is only partial relative to SPEC's source subfolders. Implementation completions need code and/or successful verification suited to the claim.
+Resolution at the initial review: preserve a byte-for-byte received snapshot in `docs/TODO_ORIGINAL.md` and do not treat supplied checks as verified work. The user later authorized evidence-backed updates to the current `TODO.md`. Implementation completions require code and/or successful verification suited to the claim; chronological evidence remains in `docs/AI_DEVELOPMENT_HISTORY.md`.
 
 The assignment eventually asks for an updated `TODO.md`, whereas the current instruction forbids editing supplied specs. For this review the no-edit instruction controls: provide evidence-backed status separately. Before final submission, obtain authorization to reconcile `TODO.md` with demonstrated progress, retaining the original snapshot. This is a final-documentation issue, not a reason to stop this review or routine implementation.
 

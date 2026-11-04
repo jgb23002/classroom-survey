@@ -19,7 +19,7 @@ The assignment's `Classroom_Survey_Web_App_Specification.md` is represented here
 - `README.md` is starter documentation referencing configuration that is absent.
 - Node v24.14.1, npm 11.11.0, Git 2.52.0, and GitHub CLI 2.87.0 are available locally. Package compatibility and registry availability have not been checked by installation.
 - `git rev-parse --show-toplevel` fails: this directory is not currently a Git repository. No GitHub remote, Supabase project state, or Cloudflare deployment was inspected.
-- `TODO.md` contains 123 checked and 41 unchecked entries. Its completion flags are supplied content, not verified project status. See [TODO_STATUS.md](TODO_STATUS.md) and the byte-for-byte [original snapshot](TODO_ORIGINAL.md).
+- At the initial review, `TODO.md` contained 123 checked and 41 unchecked entries that were not verified project status. The byte-for-byte [original snapshot](TODO_ORIGINAL.md) preserves that input; the current root TODO was later updated only with evidence-backed progress.
 
 No application build was attempted: the entry points, configurations, and dependencies required for one are absent. No external setup can be inferred from local SQL examples or checklist marks.
 
@@ -225,6 +225,6 @@ Frontend key exposure is expected for the publishable key; authorization comes f
 
 ## 8. Completion reporting
 
-For every later phase record: requested scope, files changed, implemented behavior, commands/checks actually run with outcomes, manual checks still needed, known problems, and the proposed next bounded phase. Keep the original supplied TODO unchanged unless the user later authorizes updating that specification; track evidence in `TODO_STATUS.md`. When preparing final assignment submission, reconcile the assignment's updated-TODO requirement with that editing restriction as described in DECISIONS D02.
+For every later phase record: requested scope, files changed, implemented behavior, commands/checks actually run with outcomes, manual checks still needed, known problems, and the proposed next bounded phase. Preserve the received TODO snapshot and update the current TODO only when completion has implementation or verification evidence, as described in DECISIONS D02.
 
 This review establishes requirements and a plan only. The next proposed implementation is phase 1, the runnable foundation.

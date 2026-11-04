@@ -10,7 +10,7 @@ This roadmap breaks the implementation into small, testable phases ordered from 
 
 Phases 1–14 are implemented and verified locally. The layered suite covers unit, Chromium/Firefox browser and disposable PostgreSQL RLS/RPC behavior. On 2026-11-03, the Cloudflare production origin and direct SPA routes were reachable, signed-out route guards worked, the public lookup RPC worked, and anonymous access to private tables and all instructor RPCs was denied. Results and duplication RPCs are now present remotely. The hosted authenticated/data-mutating workflow, physical-phone QR scan, results, CSV and history remain manual and are not marked verified. Evidence is recorded in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md), [docs/TESTING.md](docs/TESTING.md), [docs/UI_ACCESSIBILITY_AUDIT.md](docs/UI_ACCESSIBILITY_AUDIT.md), and [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md).
 
-The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TODO_ORIGINAL.md). The public route is `/s/:slug` per UI.md/API.md; Phase 7 retains the original `:surveyId` wording for traceability. See [docs/TODO_STATUS.md](docs/TODO_STATUS.md) for the historical audit and current evidence.
+The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TODO_ORIGINAL.md). The public route is `/s/:slug` per UI.md/API.md; Phase 7 retains the original `:surveyId` wording for traceability. Historical phase evidence is retained in [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md), with final test and deployment evidence in `docs/TESTING.md` and `docs/DEPLOYMENT.md`.
 
 # Phase 1 — Project Setup
 
