@@ -455,6 +455,7 @@ test('survey editor warns before discarding edits and locks active surveys', asy
 test('presentation generates the production URL QR, copies, downloads PNG, and closes', async ({
   page,
   context,
+  browserName,
 }) => {
   const surveyId = '10000000-0000-4000-8000-000000000070';
   let status = 'active';
@@ -486,9 +487,27 @@ test('presentation generates the production URL QR, copies, downloads PNG, and c
     });
   });
   await openAuthenticatedDashboard(page);
-  await context.grantPermissions(['clipboard-read', 'clipboard-write'], {
-    origin: 'http://127.0.0.1:4173',
-  });
+  if (browserName === 'chromium') {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write'], {
+      origin: 'http://127.0.0.1:4173',
+    });
+  } else {
+    await page.addInitScript(() => {
+      let text = '';
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: {
+          writeText(value: string) {
+            text = value;
+            return Promise.resolve();
+          },
+          readText() {
+            return Promise.resolve(text);
+          },
+        },
+      });
+    });
+  }
   await page.goto(`/surveys/${surveyId}/present`);
 
   await expect(page.getByRole('heading', { name: 'Recursion Concept Check' })).toBeVisible();

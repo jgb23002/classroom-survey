@@ -4,7 +4,7 @@ A classroom survey application for CSE 4095 — Agentic Programming.
 
 ## Current scope
 
-Phase 1 provides a runnable frontend foundation, a landing page, all specified route shells, shared layouts, and environment-validated lazy Supabase clients. Login, protected session routing, survey management, submissions, QR generation, charts, export, database migrations and deployment are later phases. Placeholder pages do not fetch records or simulate successful actions. The presence of a route or an installed library does not mean its feature is implemented.
+Phases 1–14 provide the complete local application, versioned Supabase schema/RPCs, instructor authentication and survey workflow, anonymous student submission, results/CSV, responsive accessibility polish and layered automated tests. Cloudflare deployment and hosted-project verification remain Phase 15 work; local and intercepted test success does not prove the remote project is configured.
 
 ## Local setup
 
@@ -15,7 +15,7 @@ npm ci
 npm run dev
 ```
 
-Open the local URL printed by Vite. The landing page and route shells work without credentials. No external service is required for the build or static checks.
+Open the local URL printed by Vite. No external service is required for builds, static checks or mocked browser tests. Real application workflows require the configured Supabase project and applied migrations.
 
 For future live Supabase integration, copy the example locally:
 
@@ -32,40 +32,42 @@ VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_replace_me
 
 Restart Vite after configuration changes. `.env.local`, `.env`, and environment variants are ignored; `.env.example` is tracked. Never supply a secret/service-role key, database password or Auth password as Vite configuration. `VITE_*` values enter the browser bundle; only public browser configuration belongs here.
 
-`src/utilities/env.ts` reports missing variable names and rejects malformed origins, non-local HTTP, example placeholders, private `sb_secret_` keys and legacy JWT keys without reflecting their values in errors. Configuration validity does not establish database connectivity, migrations or Auth readiness. Login remains disabled throughout Phase 1 even if configuration is present.
+`src/utilities/env.ts` reports missing variable names and rejects malformed origins, non-local HTTP, example placeholders, private `sb_secret_` keys and legacy JWT keys without reflecting their values in errors. Configuration validity does not establish database connectivity, migrations or Auth readiness.
 
 ## Commands
 
-| Command                | Purpose                                                                    |
-| ---------------------- | -------------------------------------------------------------------------- |
-| `npm run dev`          | Vite development server                                                    |
-| `npm run typecheck`    | Strict TypeScript checks for application, tools and tests                  |
-| `npm run build`        | Typecheck, then build production assets into `dist/`                       |
-| `npm run preview`      | Serve a completed production build locally                                 |
-| `npm run lint`         | ESLint with TypeScript, hooks and refresh checks; zero warnings allowed    |
-| `npm run format`       | Format maintained source/config/docs with Prettier                         |
-| `npm run format:check` | Check formatting without changing files                                    |
-| `npm test`             | Focused configuration validation tests; no live database                   |
-| `npm run test:watch`   | Watch configuration tests                                                  |
-| `npm run test:e2e`     | Desktop/mobile Chromium checks against the production preview; build first |
+| Command                | Purpose                                                                 |
+| ---------------------- | ----------------------------------------------------------------------- |
+| `npm run dev`          | Vite development server                                                 |
+| `npm run typecheck`    | Strict TypeScript checks for application, tools and tests               |
+| `npm run build`        | Typecheck, then build production assets into `dist/`                    |
+| `npm run preview`      | Serve a completed production build locally                              |
+| `npm run lint`         | ESLint with TypeScript, hooks and refresh checks; zero warnings allowed |
+| `npm run format`       | Format maintained source/config/docs with Prettier                      |
+| `npm run format:check` | Check formatting without changing files                                 |
+| `npm test`             | Vitest utility and service tests with isolated client mocks             |
+| `npm run test:unit`    | Explicit alias for the one-run Vitest suite                             |
+| `npm run test:watch`   | Watch Vitest tests                                                      |
+| `npm run test:browser` | Chromium and Firefox workflows against the production preview           |
+| `npm run test:db`      | Versioned migrations and RLS/RPC checks in disposable local PostgreSQL  |
 
-The browser tests require Playwright Chromium. If it is not installed, run `npx playwright install chromium`. An existing compatible browser can be selected through `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`. Browser tests manage their own preview server on port 4173. Supplied specifications and the original TODO snapshot are excluded from automatic formatting.
+The browser tests require Playwright Chromium and Firefox. If needed, run `npx playwright install chromium firefox`. Browser tests manage their own preview server on port 4173. Database tests require PostgreSQL 16 tools and create/remove only their own temporary cluster. See [docs/TESTING.md](docs/TESTING.md) for the full matrix, exact results and limitations.
 
 ## Routes
 
-| Route                  | Current behavior                                                  |
-| ---------------------- | ----------------------------------------------------------------- |
-| `/`                    | Landing page                                                      |
-| `/login`               | Supabase email/password instructor login                          |
-| `/dashboard`           | Protected, database-backed instructor dashboard                   |
-| `/surveys/new`         | Create and atomically save a draft survey                         |
-| `/surveys/:id/edit`    | Load and atomically edit an eligible draft/closed survey          |
-| `/surveys/:id/present` | Presentation placeholder; Phase 6 dependency                      |
-| `/surveys/:id/results` | Results placeholder; Phase 9 dependency                           |
-| `/s/:slug`             | Minimal public student placeholder, with no instructor navigation |
-| Any unmatched path     | Application not-found page                                        |
+| Route                  | Current behavior                                              |
+| ---------------------- | ------------------------------------------------------------- |
+| `/`                    | Landing page                                                  |
+| `/login`               | Supabase email/password instructor login                      |
+| `/dashboard`           | Protected, database-backed instructor dashboard               |
+| `/surveys/new`         | Create and atomically save a draft survey                     |
+| `/surveys/:id/edit`    | Load and atomically edit an eligible draft/closed survey      |
+| `/surveys/:id/present` | Protected QR presentation, live count and lifecycle actions   |
+| `/surveys/:id/results` | Protected aggregate charts, historical results and CSV export |
+| `/s/:slug`             | Anonymous active-survey form and atomic submission            |
+| Any unmatched path     | Application not-found page                                    |
 
-The dashboard lists real surveys newest-first, counts responses, filters by title/status and uses state-aware actions. Activation/closure use secure RPCs; duplication, archive and deletion use instructor-authorized Supabase operations. Delete confirmations warn about cascading response loss. The editor uses stable client UUIDs and `save_survey` to atomically persist metadata, questions, choices, deletes and ordering with stale-tab and historical-data protection. QR and results remain later-phase dependencies.
+The dashboard lists real surveys newest-first, counts responses, filters by title/status/date and uses state-aware actions. Activation, closure, duplication and editor persistence use authorized atomic RPCs. Delete confirmations warn about cascading response loss. Student submissions use only the public atomic RPC; results and exports remain instructor-only.
 
 ## Source layout
 
@@ -81,9 +83,9 @@ src/
   types/            Shared application types
   utilities/        Environment validation and styling helpers
 supabase/
-  migrations/       Reserved for versioned database SQL
-  tests/            Reserved for RLS/RPC/integrity tests
-tests/e2e/           Browser foundation checks
+  migrations/       Versioned schema and RPC migrations
+  tests/            Disposable RLS/RPC/integrity/concurrency tests
+tests/e2e/           Controlled browser integration and workflow checks
 docs/                Plan, decisions, progress, history and evidence
 ```
 
@@ -98,7 +100,7 @@ Use the second URL when sending an instructor invitation so the invited user can
 
 ## Deployment and remaining setup
 
-The deployment target remains **Cloudflare Pages**, serving `dist/` with build command `npm run build`. Configure the public Supabase variables at build time and use Pages' SPA fallback; there is no root `404.html`. Hard-refresh routing must be tested against the eventual deployment. No Pages project, GitHub repository, migrations or Auth account was configured in Phase 1.
+The deployment target remains **Cloudflare Pages**, serving `dist/` with build command `npm run build`. Configure the public Supabase variables at build time and use Pages' SPA fallback; there is no root `404.html`. Hard-refresh routing must be tested against the eventual deployment. No GitHub or Cloudflare deployment has been verified. The initial migration was reported as manually applied; later migrations and the hosted role-specific workflow still require explicit verification.
 
 Before live integration, the owner must create/select a Supabase project, provision instructor Auth access, configure trusted instructor authorization and execute the reviewed migrations when written. Later, authenticate GitHub and Cloudflare, authorize repository integration, configure build variables/Auth URLs, and provide private grader access. Detailed responsibilities are in [the implementation plan](docs/IMPLEMENTATION_PLAN.md#7-manual-setup-and-deployment-responsibilities).
 

@@ -1,6 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { describe, expect, it, vi } from 'vitest';
 import {
+  activateSurvey,
+  closeSurvey,
   duplicateSurvey,
   saveSurveyDraft,
   surveySaveErrorCategory,
@@ -57,6 +59,44 @@ describe('survey draft persistence diagnostics', () => {
       status: 'draft',
       updatedAt: '2026-11-03T12:00:00.000Z',
     });
+  });
+});
+
+describe('survey lifecycle service', () => {
+  it('activates through the lifecycle RPC and validates the active slug', async () => {
+    const supabase = client('instructor', {
+      data: {
+        id: '10000000-0000-4000-8000-000000000001',
+        status: 'active',
+        public_slug: 'random-public-slug',
+      },
+      error: null,
+    });
+    await expect(activateSurvey('10000000-0000-4000-8000-000000000001', supabase)).resolves.toEqual(
+      {
+        id: '10000000-0000-4000-8000-000000000001',
+        status: 'active',
+        publicSlug: 'random-public-slug',
+      },
+    );
+    expect(supabase.rpc).toHaveBeenCalledWith('activate_survey', {
+      p_survey_id: '10000000-0000-4000-8000-000000000001',
+    });
+  });
+
+  it('closes through the lifecycle RPC and reports database failures', async () => {
+    const success = client('instructor', { data: { status: 'closed' }, error: null });
+    await expect(
+      closeSurvey('10000000-0000-4000-8000-000000000001', success),
+    ).resolves.toBeUndefined();
+    expect(success.rpc).toHaveBeenCalledWith('close_survey', {
+      p_survey_id: '10000000-0000-4000-8000-000000000001',
+    });
+
+    const failure = client('instructor', { data: null, error: { message: 'denied' } });
+    await expect(closeSurvey('10000000-0000-4000-8000-000000000001', failure)).rejects.toThrow(
+      'could not be closed',
+    );
   });
 });
 

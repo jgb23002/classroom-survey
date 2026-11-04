@@ -8,7 +8,7 @@ This roadmap breaks the implementation into small, testable phases ordered from 
 
 ## Progress evidence — 2026-11-03
 
-Phases 1–13 are implemented and verified locally. Historical results, spreadsheet-safe CSV export, atomic duplication, and the responsive/accessibility polish pass are covered by unit, database and desktop/tablet/mobile browser checks. Representative required routes pass automated WCAG A/AA and horizontal-overflow scans; manual assistive-technology and physical-device checks remain documented. The initial migration was reported as manually applied, but migrations 002–005, remote SQL/RLS verification, real role-specific client checks, deployed QR scan, and the hosted end-to-end workflow remain manual. Evidence is recorded in [docs/PHASE_1_REPORT.md](docs/PHASE_1_REPORT.md), [docs/PHASE_2_REPORT.md](docs/PHASE_2_REPORT.md), [docs/UI_ACCESSIBILITY_AUDIT.md](docs/UI_ACCESSIBILITY_AUDIT.md), and [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md).
+Phases 1–14 are implemented and verified locally. The layered suite now includes 58 Vitest tests, 88 browser tests across Chromium and Firefox, and five disposable PostgreSQL RLS/RPC verification stages. The stateful browser workflow covers instructor creation/editing/activation, anonymous submission/duplicate handling, results/CSV, closure/history and logout protection without touching hosted data. Manual assistive-technology, physical-device and hosted end-to-end checks remain documented. The initial migration was reported as manually applied, but migrations 002–005, remote SQL/RLS verification, deployed QR scanning and the hosted workflow remain manual. Evidence is recorded in [docs/TESTING.md](docs/TESTING.md), [docs/UI_ACCESSIBILITY_AUDIT.md](docs/UI_ACCESSIBILITY_AUDIT.md), and [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md).
 
 The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TODO_ORIGINAL.md). The public route is `/s/:slug` per UI.md/API.md; Phase 7 retains the original `:surveyId` wording for traceability. See [docs/TODO_STATUS.md](docs/TODO_STATUS.md) for the historical audit and current evidence.
 
@@ -207,17 +207,17 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 # Phase 14 — Testing
 
 - [x] Test instructor login.
-- [ ] Test survey creation.
-- [ ] Test survey editing.
-- [ ] Test activation.
-- [ ] Test closing surveys.
-- [ ] Test QR-code links.
+- [x] Test survey creation.
+- [x] Test survey editing.
+- [x] Test activation.
+- [x] Test closing surveys.
+- [x] Test QR-code links.
 - [x] Test student submissions.
 - [x] Test duplicate-submission prevention.
 - [x] Test results calculations.
 - [x] Test CSV export.
 - [x] Test mobile layout.
-- [ ] Test with at least two browsers.
+- [x] Test with at least two browsers.
 - [x] Test unauthorized access attempts.
 - [x] Test database Row Level Security.
 

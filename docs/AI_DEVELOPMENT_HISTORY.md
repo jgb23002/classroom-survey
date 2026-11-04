@@ -125,6 +125,14 @@ Use: concise record of prompts, changes, verification and problems for the assig
 - **Problems, limits and manual checks remaining:** Automation does not replace VoiceOver/NVDA, multiple browser engines, 200% zoom/forced-colors, physical phone or real-projector testing. Those checks are documented and not claimed as performed. Browser API data remained intercepted and no hosted backend/deployment was changed. The production-dependency audit reported zero vulnerabilities; the full audit reported 13 moderate `minimatch` findings in ESLint/TypeScript-ESLint development tooling, whose offered forced fix is breaking, so no unsafe automatic dependency downgrade was applied.
 - **Next bounded phase:** Perform the documented human accessibility/device checks, then continue Phase 14 testing without conflating local browser evidence with hosted verification.
 
+## 2026-11-03 — Phase 14: comprehensive automated testing
+
+- **Prompt/scope:** Add maintainable unit/integration/browser/database coverage for the complete instructor-to-student workflow, security boundaries, two browser engines and evidence-backed testing documentation without touching production data.
+- **Files/behavior changed:** Added lifecycle service tests, a stateful controlled-backend Playwright workflow, desktop Firefox alongside the existing responsive Chromium projects, cross-browser clipboard test handling, named unit/browser/database npm scripts and `docs/TESTING.md`. The workflow covers create/edit, two question types, activation, anonymous success/duplicate, results/CSV, close/public rejection, preserved history and logout guard.
+- **Validation performed and outcomes:** Vitest passed 58/58 tests in 9 files. Playwright passed 88/88 across desktop Chromium, desktop Firefox, tablet Chromium and mobile Chromium. The disposable PostgreSQL runner passed five schema/RLS/RPC/editor/results/duplication/concurrency stages and removed its temporary cluster. TypeScript, ESLint, Prettier and the production build passed; the existing Vite chunk warning remains non-failing.
+- **Problems, limits and manual checks remaining:** An initial workflow assertion was too strict about a safe logout `returnTo` query and was corrected; the rerun passed 4/4. The first full browser run passed 87/88 because Firefox rejects a Chromium-only clipboard permission name; a Firefox-only test shim fixed that infrastructure mismatch, the focused test passed 1/1 and the final regression passed 88/88. Browser backends are intercepted and PostgreSQL uses local Supabase-compatible claims, so hosted migrations/accounts and production behavior remain unverified. WebKit, real email, assistive technology, load testing and physical-device/projector checks remain manual.
+- **Next bounded phase:** Apply and verify pending hosted migrations, then complete Phase 15 deployment and production smoke tests.
+
 ## Later phase entry format
 
 - **Prompt/scope:**

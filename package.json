@@ -14,8 +14,13 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
+    "test:unit": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:browser": "playwright test",
+    "test:browser:chromium": "playwright test --project=desktop-chromium --project=tablet-chromium --project=mobile-chromium",
+    "test:browser:firefox": "playwright test --project=desktop-firefox",
+    "test:db": "bash supabase/tests/run_local.sh",
     "preview": "vite preview"
   },
   "dependencies": {
