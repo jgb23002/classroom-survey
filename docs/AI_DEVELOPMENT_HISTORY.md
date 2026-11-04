@@ -149,6 +149,41 @@ Use: concise record of prompts, changes, verification and problems for the assig
 - **Problems, limits and manual checks remaining:** The full dependency audit retains 13 moderate `minimatch` advisories in lint-only development tooling; npm offers only a breaking forced downgrade, so it was not applied. The Vite build retains its non-failing chunk warning. Hosted migrations 004/005, Cloudflare deployment, production workflows and the four required sanitized database screenshots remain incomplete. Earlier Git commits contain two now-redacted local cache paths; they contain no credential or student data, and history was not rewritten.
 - **Next bounded phase:** Apply the missing hosted migrations, deploy through Cloudflare Pages, complete production/device checks, add sanitized database evidence, and then update only the corresponding TODO items.
 
+## 2026-11-03 — Production-readiness audit
+
+- **Prompt/scope:** Audit the supplied Cloudflare production URL and Supabase
+  integration across deployment, SPA routes, authentication, survey lifecycle,
+  public submission, results/export/history, RLS, responsive behavior, secrets,
+  console health and placeholder behavior; record facts without treating a
+  local build as production proof.
+- **Files/behavior changed:** Added `docs/DEPLOYMENT.md` with the observed
+  deployment configuration and a safe authenticated/device checklist; appended
+  production evidence and limitations to `docs/TESTING.md`; updated stale
+  hosted-migration notes and checked only the deployment and SPA-routing TODO
+  items supported by direct evidence. No
+  production data, database policy, credential, application behavior or remote
+  setting was changed.
+- **Validation performed and outcomes:** Cloudflare returned the Vite shell and
+  assets over HTTPS. Six direct nested routes returned the same SPA document.
+  Headless desktop Chromium/Firefox and mobile Chromium verified enabled login
+  controls, signed-out guards, public not-found behavior, no overflow and no
+  console/page/request errors. Hosted read-only probes confirmed the public lookup works, no active
+  survey was visible, private response/answer reads are denied, and all four
+  instructor RPCs—including results and duplication—exist but reject anonymous
+  callers with PostgreSQL `42501`. The bundle used a public publishable key and
+  contained no JWT-shaped secret.
+- **Problems, limits and manual checks remaining:** The `workers.dev` hostname
+  proves a Cloudflare deployment but not its Pages-versus-Workers product or
+  GitHub connection. `VITE_PUBLIC_APP_URL` was not embedded, although the tested
+  runtime-origin fallback is correct; setting it explicitly is recommended. No
+  credentials or active survey were available, so production login/logout,
+  real mutations, phone QR, submission/duplicate persistence, results/charts,
+  CSV, history, normal-user denial and full-workflow console health remain
+  unverified. These steps are listed in `docs/DEPLOYMENT.md`.
+- **Next bounded phase:** Complete the documented workflow with a disposable
+  production survey and physical phone, record actual outcomes, then check only
+  the corresponding remaining deployment TODO entries.
+
 ## Later phase entry format
 
 - **Prompt/scope:**

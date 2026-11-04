@@ -8,7 +8,7 @@ This roadmap breaks the implementation into small, testable phases ordered from 
 
 ## Progress evidence — 2026-11-03
 
-Phases 1–14 are implemented and verified locally. The layered suite covers unit, Chromium/Firefox browser and disposable PostgreSQL RLS/RPC behavior. On 2026-11-03, safe anonymous probes against the configured Supabase project returned HTTP 404 / `PGRST202` for `get_survey_results` and `duplicate_survey`, proving migrations 004 and 005 are not exposed remotely; `get_public_survey` returned HTTP 200 for a nonexistent probe slug. Those two migrations and real instructor calls remain manual and are not marked remotely verified. QR links now support an explicit `VITE_PUBLIC_APP_URL`; deployed or same-network phone scanning remains manual. Evidence is recorded in [docs/TESTING.md](docs/TESTING.md), [docs/UI_ACCESSIBILITY_AUDIT.md](docs/UI_ACCESSIBILITY_AUDIT.md), and [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md).
+Phases 1–14 are implemented and verified locally. The layered suite covers unit, Chromium/Firefox browser and disposable PostgreSQL RLS/RPC behavior. On 2026-11-03, the Cloudflare production origin and direct SPA routes were reachable, signed-out route guards worked, the public lookup RPC worked, and anonymous access to private tables and all instructor RPCs was denied. Results and duplication RPCs are now present remotely. The hosted authenticated/data-mutating workflow, physical-phone QR scan, results, CSV and history remain manual and are not marked verified. Evidence is recorded in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md), [docs/TESTING.md](docs/TESTING.md), [docs/UI_ACCESSIBILITY_AUDIT.md](docs/UI_ACCESSIBILITY_AUDIT.md), and [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md).
 
 The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TODO_ORIGINAL.md). The public route is `/s/:slug` per UI.md/API.md; Phase 7 retains the original `:surveyId` wording for traceability. See [docs/TODO_STATUS.md](docs/TODO_STATUS.md) for the historical audit and current evidence.
 
@@ -229,8 +229,8 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 - [ ] Create the Cloudflare Pages site.
 - [ ] Connect Cloudflare Pages to the GitHub repository.
 - [ ] Configure production environment variables.
-- [ ] Deploy the application.
-- [ ] Configure SPA routing.
+- [x] Deploy the application.
+- [x] Configure SPA routing.
 - [ ] Verify production login.
 - [ ] Verify QR codes point to the production URL.
 - [ ] Test student submissions in production.

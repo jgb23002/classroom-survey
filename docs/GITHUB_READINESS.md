@@ -34,10 +34,11 @@ Review date: 2026-11-03 (America/New_York).
 The repository is ready to push, but the assignment is not complete until the
 owner performs and records these external steps:
 
-1. Apply and verify hosted migrations `004` and `005`; safe probes currently
-   report that their RPCs are missing from the configured Supabase schema cache.
-2. Create/confirm the public Cloudflare Pages deployment, set all three public
-   Vite variables, configure Auth callback URLs, and verify direct SPA routes.
+1. Confirm in Cloudflare whether the live `workers.dev` deployment is the
+   intended Pages/GitHub-connected resource and explicitly set its public app
+   origin variable. Hosted RPC probes now show migrations `004` and `005` are
+   present.
+2. Configure/confirm production Auth callback URLs and instructor metadata.
 3. Test production login, survey creation/activation, an anonymous submission
    from another device, results, CSV, closure and the production QR link.
 4. Add the four sanitized real screenshots listed in

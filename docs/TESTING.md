@@ -103,3 +103,46 @@ Failures found and corrected during the phase:
 - Never point `supabase/tests/run_local.sh` or synthetic browser fixtures at a
   legitimate production database. The supplied database runner creates its own
   `mktemp` cluster and disables network listening.
+
+## Production smoke audit — 2026-11-03
+
+Target:
+`https://e22ba2d3-classroom-survey.jiya-bhadreshbhai-gorasiya.workers.dev`.
+
+### Verified without credentials or data mutation
+
+- HTTPS root and production assets returned HTTP 200 through Cloudflare.
+- Direct requests to six nested application routes returned the same SPA shell
+  as `/`; client-side direct refresh routing is operational.
+- Desktop Chromium/Firefox at 1280x800 and mobile Chromium at 390x844 rendered
+  the tested public/login/protected-route paths without console errors, page
+  errors, request failures or horizontal overflow.
+- Login controls were enabled. Signed-out dashboard and survey-editor requests
+  redirected to Login with safe internal return paths.
+- The invalid public slug produced a successful hosted
+  `get_public_survey` call and the Survey not found UI.
+- The deployed Supabase configuration is usable. No JWT-shaped secret appeared
+  in the public bundle. The expected publishable browser key is public by
+  design; private/service-role keys remain forbidden.
+- Anonymous table probes returned no active survey/question/choice rows during
+  the audit. Anonymous reads of `responses` and `answers` returned HTTP 401 /
+  PostgreSQL `42501`.
+- Anonymous calls to `activate_survey`, `close_survey`,
+  `get_survey_results`, and `duplicate_survey` returned HTTP 401 / PostgreSQL
+  `42501`. This both verifies denial and proves all four RPCs are now present in
+  the hosted PostgREST schema; the earlier missing-migration observation is no
+  longer current.
+
+### Not yet verified in production
+
+No instructor credentials were supplied and no active public survey existed.
+Accordingly, production login/logout, instructor claim handling, real
+create/edit persistence, activation/closure, QR/phone access, anonymous
+submission persistence, duplicate enforcement, private results, charts, CSV,
+history, normal-user denial, and the absence of console errors throughout the
+authenticated workflow remain manual. Local mocked and disposable-database
+tests cover these behaviors but are not production evidence.
+
+The exact manual sequence and safe test-data guidance are in
+`docs/DEPLOYMENT.md`. Do not mark these production items passed until their
+observed outcomes are added here.
