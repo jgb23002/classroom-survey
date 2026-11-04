@@ -117,6 +117,14 @@ Use: concise record of prompts, changes, verification and problems for the assig
 - **Problems, limits and manual checks remaining:** The build retains its non-failing chunk-size warning. The spreadsheet check used synthetic data and the database checks used disposable PostgreSQL; migrations 002–005, hosted exports, live instructor authorization and production workflows remain unverified. Apply migration 005 only after earlier migrations, refresh PostgREST if necessary, then test with the real instructor account.
 - **Next bounded phase:** Apply and verify pending hosted migrations, then continue Phase 13 UI/accessibility polish.
 
+## 2026-11-03 — Phase 13: responsive UI and accessibility polish
+
+- **Prompt/scope:** Review every required route for professional consistency, responsive behavior, keyboard/accessibility support, state feedback, destructive confirmations, navigation and instructor/student separation; remove misleading placeholders and run automated checks.
+- **Files/behavior changed:** Removed the obsolete “sign-in is being prepared” landing copy and unused placeholder component; associated editor errors with their fields and gave choices a semantic legend; expanded the student answer-card focus indicator; added a polished instructor authorization-loading state and disabled/error-aware logout; added desktop/tablet/mobile projects plus Axe WCAG A/AA, overflow, keyboard radio and back/forward assertions. Added the manual audit checklist in `docs/UI_ACCESSIBILITY_AUDIT.md`.
+- **Validation performed and outcomes:** All 56 unit tests, strict TypeScript, ESLint, Prettier and production build passed. Desktop and phone suites passed 42 tests; after correcting Playwright's iPad preset from unavailable WebKit to Chromium, all 21 tablet tests passed. Combined coverage is 63 browser cases with representative Axe scans on every required route type and no detected WCAG A/AA violations or horizontal overflow. The build retains its non-failing chunk-size warning.
+- **Problems, limits and manual checks remaining:** Automation does not replace VoiceOver/NVDA, multiple browser engines, 200% zoom/forced-colors, physical phone or real-projector testing. Those checks are documented and not claimed as performed. Browser API data remained intercepted and no hosted backend/deployment was changed. The production-dependency audit reported zero vulnerabilities; the full audit reported 13 moderate `minimatch` findings in ESLint/TypeScript-ESLint development tooling, whose offered forced fix is breaking, so no unsafe automatic dependency downgrade was applied.
+- **Next bounded phase:** Perform the documented human accessibility/device checks, then continue Phase 14 testing without conflating local browser evidence with hosted verification.
+
 ## Later phase entry format
 
 - **Prompt/scope:**

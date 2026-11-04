@@ -6,7 +6,13 @@ export function RequireInstructor() {
   const location = useLocation();
 
   if (auth.status === 'loading') {
-    return <p role="status">Checking instructor access…</p>;
+    return (
+      <main className="page-container py-20 text-center" id="main-content" tabIndex={-1}>
+        <p role="status" className="text-lg text-muted">
+          Checking instructor access…
+        </p>
+      </main>
+    );
   }
 
   if (auth.status !== 'authorized') {

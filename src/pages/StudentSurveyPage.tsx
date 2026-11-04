@@ -238,7 +238,7 @@ export function StudentSurveyPage() {
                 {question.choices.map((choice) => (
                   <label
                     key={choice.id}
-                    className="flex min-h-12 cursor-pointer items-center gap-4 rounded-xl border border-line px-4 py-3 text-base leading-6 transition-colors has-checked:border-brand-700 has-checked:bg-brand-50"
+                    className="flex min-h-12 cursor-pointer items-center gap-4 rounded-xl border border-line px-4 py-3 text-base leading-6 transition-colors has-checked:border-brand-700 has-checked:bg-brand-50 has-focus-visible:ring-3 has-focus-visible:ring-brand-700 has-focus-visible:ring-offset-2"
                   >
                     <input
                       type="radio"

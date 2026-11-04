@@ -1,10 +1,30 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+
+async function expectAccessible(page: import('@playwright/test').Page, context: string) {
+  const results = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze();
+  expect(
+    results.violations.map(({ id, impact, nodes }) => ({
+      id,
+      impact,
+      targets: nodes.map((node) => node.target.join(' ')),
+    })),
+    `${context} should have no automated WCAG A/AA violations`,
+  ).toEqual([]);
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    `${context} should not overflow horizontally`,
+  ).toBe(true);
+}
 
 test('home supports keyboard access and navigation to login', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'A clearer picture of your classroom.',
   );
+  await expectAccessible(page, 'landing page');
   await page.keyboard.press('Tab');
   await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
   await page.keyboard.press('Enter');
@@ -17,6 +37,13 @@ test('home supports keyboard access and navigation to login', async ({ page }) =
   await expect(page.getByLabel('Password', { exact: true })).toBeEnabled();
   await expect(page.getByRole('button', { name: 'Log in', exact: true })).toBeEnabled();
   await expect(page.getByText('Instructor sign-in is being prepared')).toHaveCount(0);
+  await expectAccessible(page, 'login page');
+  await page.goBack();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'A clearer picture of your classroom.',
+  );
+  await page.goForward();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Instructor login');
 });
 
 function authResponse(role: string) {
@@ -197,6 +224,7 @@ test('dashboard renders real response shapes and filters by title and status', a
   const closedActions = page.getByLabel('Actions for Closed Arrays Review');
   await expect(closedActions.getByRole('link', { name: 'Edit' })).toHaveCount(0);
   await expect(closedActions.getByRole('button', { name: 'Archive' })).toBeVisible();
+  await expectAccessible(page, 'dashboard');
 });
 
 test('dashboard confirms close and refreshes after the RPC mutation', async ({ page }) => {
@@ -271,6 +299,7 @@ test('dashboard duplicates atomically and redirects to the new draft editor', as
   await expect(page).toHaveURL(`/surveys/${copyId}/edit`);
   expect(duplicateBody).toEqual({ p_survey_id: dashboardRows[2]?.id });
   await expect(page.getByLabel('Survey title')).toHaveValue('Copy of Closed Arrays Review');
+  await expectAccessible(page, 'existing survey editor');
 });
 
 test('dashboard shows loading, error retry, and empty states', async ({ page }) => {
@@ -330,6 +359,7 @@ test('survey editor validates activation and maintains true/false choices', asyn
   await expect(page.getByLabel('Choice 1')).toHaveValue('True');
   await expect(page.getByLabel('Choice 2')).toHaveValue('False');
   await expect(page.getByLabel('Choice 1')).toHaveAttribute('readonly', '');
+  await expectAccessible(page, 'new survey editor');
 });
 
 test('survey editor sends one ordered atomic save payload and reloads the draft', async ({
@@ -489,6 +519,7 @@ test('presentation generates the production URL QR, copies, downloads PNG, and c
   await expect.poll(() => closeRequests).toBe(1);
   await expect(page.getByText('closed', { exact: true })).toBeVisible();
   await expect(page.getByText('New submissions are no longer accepted.')).toBeVisible();
+  await expectAccessible(page, 'survey presentation');
 });
 
 test('instructor results show zero, refresh aggregates, charts, and export CSV', async ({
@@ -611,6 +642,7 @@ test('instructor results show zero, refresh aggregates, charts, and export CSV',
     'href',
     '/dashboard',
   );
+  await expectAccessible(page, 'survey results');
 });
 
 const routes = [
@@ -706,12 +738,18 @@ test('student loads, validates, and submits anonymously through one RPC', async 
   await page.goto('/s/recursion-check');
   await expect(page.getByRole('heading', { name: 'Recursion Concept Check' })).toBeVisible();
   await expect(page.getByText('Quick understanding check for CSE students')).toBeVisible();
+  await expectAccessible(page, 'student survey');
   await expect(page.getByRole('navigation')).toHaveCount(0);
   await expect(page.getByRole('link', { name: /login|dashboard/i })).toHaveCount(0);
   await page.getByRole('button', { name: 'Submit response' }).click();
   await expect(page.getByText('Choose one answer for this question.')).toHaveCount(2);
   expect(submissionBody).toBeUndefined();
 
+  await page.getByLabel('A base case').focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(page.getByLabel('A pointer')).toBeChecked();
+  await page.keyboard.press('ArrowUp');
+  await expect(page.getByLabel('A base case')).toBeChecked();
   await page.getByLabel('A base case').check();
   await page.getByLabel('True', { exact: true }).check();
   const submit = page.getByRole('button', { name: 'Submit response' });

@@ -8,7 +8,7 @@ This roadmap breaks the implementation into small, testable phases ordered from 
 
 ## Progress evidence — 2026-11-03
 
-Phases 1–12 are implemented and verified locally. Historical title/date filtering, active/closed/archived result retention, spreadsheet-safe CSV export, and atomic Draft duplication are covered by unit, browser, and disposable PostgreSQL checks. Excel 16.114.1 also passed a production-shaped CSV fixture check. The initial migration was reported as manually applied, but migrations 002–005, remote SQL/RLS verification, real role-specific client checks, deployed QR scan, and the hosted end-to-end workflow remain manual. Evidence is recorded in [docs/PHASE_1_REPORT.md](docs/PHASE_1_REPORT.md), [docs/PHASE_2_REPORT.md](docs/PHASE_2_REPORT.md), [docs/REMOTE_DATABASE_VERIFICATION.md](docs/REMOTE_DATABASE_VERIFICATION.md), and [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md).
+Phases 1–13 are implemented and verified locally. Historical results, spreadsheet-safe CSV export, atomic duplication, and the responsive/accessibility polish pass are covered by unit, database and desktop/tablet/mobile browser checks. Representative required routes pass automated WCAG A/AA and horizontal-overflow scans; manual assistive-technology and physical-device checks remain documented. The initial migration was reported as manually applied, but migrations 002–005, remote SQL/RLS verification, real role-specific client checks, deployed QR scan, and the hosted end-to-end workflow remain manual. Evidence is recorded in [docs/PHASE_1_REPORT.md](docs/PHASE_1_REPORT.md), [docs/PHASE_2_REPORT.md](docs/PHASE_2_REPORT.md), [docs/UI_ACCESSIBILITY_AUDIT.md](docs/UI_ACCESSIBILITY_AUDIT.md), and [docs/AI_DEVELOPMENT_HISTORY.md](docs/AI_DEVELOPMENT_HISTORY.md).
 
 The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TODO_ORIGINAL.md). The public route is `/s/:slug` per UI.md/API.md; Phase 7 retains the original `:surveyId` wording for traceability. See [docs/TODO_STATUS.md](docs/TODO_STATUS.md) for the historical audit and current evidence.
 
@@ -192,15 +192,15 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 
 # Phase 13 — UI Polish
 
-- [ ] Add consistent page layouts.
-- [ ] Improve mobile responsiveness.
-- [ ] Add loading states.
-- [ ] Add empty states.
-- [ ] Add error messages.
-- [ ] Add confirmation dialogs for destructive actions.
-- [ ] Improve QR-code presentation for classroom projection.
-- [ ] Test accessibility and keyboard navigation.
-- [ ] Improve color contrast.
+- [x] Add consistent page layouts.
+- [x] Improve mobile responsiveness.
+- [x] Add loading states.
+- [x] Add empty states.
+- [x] Add error messages.
+- [x] Add confirmation dialogs for destructive actions.
+- [x] Improve QR-code presentation for classroom projection.
+- [x] Test accessibility and keyboard navigation.
+- [x] Improve color contrast.
 
 ---
 

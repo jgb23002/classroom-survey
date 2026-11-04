@@ -59,7 +59,7 @@ export function LandingPage() {
             </a>
           </div>
           <p className="mt-5 text-sm text-muted">
-            Coming soon. Instructor sign-in is being prepared.
+            Students participate anonymously from the link or QR code shared in class.
           </p>
         </div>
         <aside

@@ -299,9 +299,14 @@ export function SurveyEditor({ initialSurveyId = null }: { initialSurveyId?: str
                   }))
                 }
                 aria-invalid={Boolean(errors[`question:${question.id}`])}
+                aria-describedby={
+                  errors[`question:${question.id}`] ? `question-${question.id}-error` : undefined
+                }
               />
               {errors[`question:${question.id}`] && (
-                <p className="mt-2 text-sm text-red-700">{errors[`question:${question.id}`]}</p>
+                <p id={`question-${question.id}-error`} className="mt-2 text-sm text-red-700">
+                  {errors[`question:${question.id}`]}
+                </p>
               )}
             </div>
             <div className="mt-5">
@@ -325,8 +330,8 @@ export function SurveyEditor({ initialSurveyId = null }: { initialSurveyId?: str
                 <option value="true_false">True / False</option>
               </select>
             </div>
-            <div className="mt-6">
-              <p className="form-label">Choices</p>
+            <fieldset className="mt-6">
+              <legend className="form-label">Choices</legend>
               {errors[`choices:${question.id}`] && (
                 <p className="mb-3 text-sm text-red-700">{errors[`choices:${question.id}`]}</p>
               )}
@@ -351,9 +356,14 @@ export function SurveyEditor({ initialSurveyId = null }: { initialSurveyId?: str
                           }))
                         }
                         aria-invalid={Boolean(errors[`choice:${choice.id}`])}
+                        aria-describedby={
+                          errors[`choice:${choice.id}`] ? `choice-${choice.id}-error` : undefined
+                        }
                       />
                       {errors[`choice:${choice.id}`] && (
-                        <p className="mt-2 text-sm text-red-700">{errors[`choice:${choice.id}`]}</p>
+                        <p id={`choice-${choice.id}-error`} className="mt-2 text-sm text-red-700">
+                          {errors[`choice:${choice.id}`]}
+                        </p>
                       )}
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -416,7 +426,7 @@ export function SurveyEditor({ initialSurveyId = null }: { initialSurveyId?: str
                   Add choice
                 </Button>
               )}
-            </div>
+            </fieldset>
           </fieldset>
         ))}
       </div>
