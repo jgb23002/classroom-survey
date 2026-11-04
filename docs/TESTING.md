@@ -124,9 +124,10 @@ Target:
 - The deployed Supabase configuration is usable. No JWT-shaped secret appeared
   in the public bundle. The expected publishable browser key is public by
   design; private/service-role keys remain forbidden.
-- Anonymous table probes returned no active survey/question/choice rows during
-  the audit. Anonymous reads of `responses` and `answers` returned HTTP 401 /
-  PostgreSQL `42501`.
+- A final pre-submission recheck found exactly one active survey. Anonymous
+  reads and `get_public_survey` returned its three questions and eight choices.
+  Anonymous reads of `responses` and `answers` returned HTTP 401 / PostgreSQL
+  `42501`.
 - Anonymous calls to `activate_survey`, `close_survey`,
   `get_survey_results`, and `duplicate_survey` returned HTTP 401 / PostgreSQL
   `42501`. This both verifies denial and proves all four RPCs are now present in
@@ -135,7 +136,8 @@ Target:
 
 ### Not yet verified in production
 
-No instructor credentials were supplied and no active public survey existed.
+No instructor credentials were supplied. Although an active hosted survey is
+now anonymously readable, this audit did not submit or mutate production data.
 Accordingly, production login/logout, instructor claim handling, real
 create/edit persistence, activation/closure, QR/phone access, anonymous
 submission persistence, duplicate enforcement, private results, charts, CSV,

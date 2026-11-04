@@ -48,8 +48,9 @@ found.
 - Anonymous reads of `responses` and `answers` and anonymous execution of
   `activate_survey`, `close_survey`, `get_survey_results`, and
   `duplicate_survey` were rejected with PostgreSQL permission error `42501`.
-- Public reads of surveys, questions and choices succeeded but returned zero
-  rows because no active survey was visible during the audit.
+- Public reads of surveys, questions and choices succeeded. A final
+  pre-submission recheck found exactly one active hosted survey; its public RPC
+  returned three questions and eight ordered choices without exposing results.
 
 These checks are deliberately read-only. They did not sign in, create a survey,
 submit answers, change production data, or inspect private results.
@@ -69,8 +70,8 @@ submit answers, change production data, or inspect private results.
 | 6   | Real create/edit            | Manual   | Requires an authorized instructor and production mutation.                                                                               |
 | 7   | Activation/closure          | Manual   | Anonymous execution is denied; authorized behavior remains manual.                                                                       |
 | 8   | Production QR URL           | Partial  | Runtime origin fallback is production-safe; an active survey QR/PNG and phone scan remain manual.                                        |
-| 9   | Anonymous mobile access     | Partial  | Invalid public route rendered correctly at 390x844; a real active survey on a phone remains manual.                                      |
-| 10  | Submission persistence      | Manual   | No active survey existed and no production data was inserted.                                                                            |
+| 9   | Anonymous mobile access     | Partial  | Hosted active-survey data is anonymously readable and the public UI passed at 390x844; a physical-phone survey visit remains manual.     |
+| 10  | Submission persistence      | Manual   | An active survey is readable, but this audit inserted no production data; hosted submission persistence remains manual.                  |
 | 11  | Duplicate protection        | Manual   | Requires two real same-browser attempts; database behavior is verified only in disposable tests.                                         |
 | 12  | Instructor-only results     | Partial  | Anonymous results RPC was denied; authorized results remain manual.                                                                      |
 | 13  | Charts and percentages      | Manual   | Requires known production responses and visual comparison.                                                                               |

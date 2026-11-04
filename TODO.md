@@ -41,8 +41,8 @@ The received checklist remains byte-for-byte in [docs/TODO_ORIGINAL.md](docs/TOD
 - [x] Add timestamps.
 - [x] Add survey-status validation.
 - [x] Create Row Level Security policies.
-- [ ] Verify students cannot read survey results.
-- [ ] Verify anonymous students can read active surveys.
+- [x] Verify students cannot read survey results.
+- [x] Verify anonymous students can read active surveys.
 - [ ] Verify anonymous students can submit responses.
 - [ ] Verify authenticated instructors have full access.
 
