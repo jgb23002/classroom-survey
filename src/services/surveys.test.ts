@@ -113,4 +113,19 @@ describe('survey duplication', () => {
       p_survey_id: '10000000-0000-4000-8000-000000000001',
     });
   });
+
+  it('identifies a missing remote duplication RPC without exposing payload data', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const supabase = client('instructor', {
+      data: null,
+      error: { code: 'PGRST202', message: 'Could not find public.duplicate_survey' },
+    });
+    await expect(duplicateSurvey('10000000-0000-4000-8000-000000000001', supabase)).rejects.toThrow(
+      '202611030005_atomic_survey_duplication.sql',
+    );
+    expect(console.error).toHaveBeenCalledWith('[survey-duplicate]', {
+      code: 'PGRST202',
+      category: 'rpc-unavailable',
+    });
+  });
 });

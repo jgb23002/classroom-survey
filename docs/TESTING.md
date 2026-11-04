@@ -62,7 +62,7 @@ reopens preserved historical results, logs out and verifies the route guard.
 
 Final clean outcomes from this phase:
 
-- `npm run test:unit`: **9 files passed, 58 tests passed, 0 failed**.
+- `npm run test:unit`: **10 files passed, 67 tests passed, 0 failed**.
 - `npm run test:browser`: **88 tests passed, 0 failed** across desktop Chromium,
   desktop Firefox, tablet Chromium and mobile Chromium.
 - `npm run test:db`: **5 verification stages passed, 0 failed**. The final

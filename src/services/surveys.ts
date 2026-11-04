@@ -164,7 +164,19 @@ export async function duplicateSurvey(
   supabase: SupabaseClient = client(),
 ): Promise<string> {
   const { data, error } = await supabase.rpc('duplicate_survey', { p_survey_id: id });
-  if (error || !data) throw new SurveyServiceError(message('duplicated'));
+  if (error) {
+    console.error('[survey-duplicate]', {
+      code: error.code || 'UNKNOWN',
+      category: error.code === 'PGRST202' ? 'rpc-unavailable' : 'database',
+    });
+    if (error.code === 'PGRST202' || error.message?.includes('duplicate_survey')) {
+      throw new SurveyServiceError(
+        'Survey duplication is not installed in Supabase. Apply migration 202611030005_atomic_survey_duplication.sql, refresh the schema cache, and try again.',
+      );
+    }
+    throw new SurveyServiceError(message('duplicated'));
+  }
+  if (!data) throw new SurveyServiceError(message('duplicated'));
   const result = data as { id?: unknown; status?: unknown };
   if (typeof result.id !== 'string' || result.status !== 'draft')
     throw new SurveyServiceError('The database returned an invalid duplicate result.');

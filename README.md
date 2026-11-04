@@ -28,11 +28,12 @@ Replace both placeholders with your own project's URL and **publishable** key:
 ```dotenv
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_replace_me
+VITE_PUBLIC_APP_URL=https://your-deployed-application.example
 ```
 
 Restart Vite after configuration changes. `.env.local`, `.env`, and environment variants are ignored; `.env.example` is tracked. Never supply a secret/service-role key, database password or Auth password as Vite configuration. `VITE_*` values enter the browser bundle; only public browser configuration belongs here.
 
-`src/utilities/env.ts` reports missing variable names and rejects malformed origins, non-local HTTP, example placeholders, private `sb_secret_` keys and legacy JWT keys without reflecting their values in errors. Configuration validity does not establish database connectivity, migrations or Auth readiness.
+`src/utilities/env.ts` reports missing variable names and rejects malformed origins, non-local HTTP, example placeholders, private `sb_secret_` keys and legacy JWT keys without reflecting their values in errors. Configuration validity does not establish database connectivity, migrations or Auth readiness. `VITE_PUBLIC_APP_URL` is the public application origin encoded into student links and QR codes; when omitted, it falls back to the current browser origin, which means localhost remains local-only.
 
 ## Commands
 

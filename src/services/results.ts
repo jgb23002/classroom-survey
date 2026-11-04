@@ -97,7 +97,19 @@ export async function getSurveyResults(
   supabase: SupabaseClient = getSupabaseClient(),
 ): Promise<SurveyResults> {
   const { data, error } = await supabase.rpc('get_survey_results', { p_survey_id: id });
-  if (error || !data) throw new ResultsServiceError('Survey results could not be loaded.');
+  if (error) {
+    console.error('[survey-results]', {
+      code: error.code || 'UNKNOWN',
+      category: error.code === 'PGRST202' ? 'rpc-unavailable' : 'database',
+    });
+    if (error.code === 'PGRST202' || error.message?.includes('get_survey_results')) {
+      throw new ResultsServiceError(
+        'Survey results are not installed in Supabase. Apply migration 202611030004_instructor_results.sql, refresh the schema cache, and try again.',
+      );
+    }
+    throw new ResultsServiceError('Survey results could not be loaded.');
+  }
+  if (!data) throw new ResultsServiceError('Survey results could not be loaded.');
   return parseResults(data);
 }
 

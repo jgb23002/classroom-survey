@@ -6,7 +6,12 @@ import { SurveyStatusBadge } from '../components/SurveyStatusBadge';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { activateSurvey, closeSurvey, getPresentationSurvey } from '../services/surveys';
 import type { PresentationSurvey } from '../types/presentation';
-import { isLocalPublicUrl, publicSurveyUrl, qrDownloadName } from '../utilities/presentation';
+import {
+  isLocalPublicUrl,
+  publicApplicationOrigin,
+  publicSurveyUrl,
+  qrDownloadName,
+} from '../utilities/presentation';
 
 const countRefreshMilliseconds = 5_000;
 
@@ -94,9 +99,20 @@ export function PresentSurveyPage() {
     return () => document.removeEventListener('fullscreenchange', update);
   }, []);
 
-  const publicUrl = survey?.publicSlug
-    ? publicSurveyUrl(survey.publicSlug, window.location.origin)
-    : '';
+  let publicUrl = '';
+  let publicUrlError = '';
+  if (survey?.publicSlug) {
+    try {
+      const publicOrigin = publicApplicationOrigin(
+        import.meta.env.VITE_PUBLIC_APP_URL,
+        window.location.origin,
+      );
+      publicUrl = publicSurveyUrl(survey.publicSlug, publicOrigin);
+    } catch (caught) {
+      publicUrlError =
+        caught instanceof Error ? caught.message : 'The public application URL is invalid.';
+    }
+  }
 
   useEffect(() => {
     let current = true;
@@ -237,6 +253,14 @@ export function PresentSurveyPage() {
           className="mt-6 rounded-xl border border-brand-100 bg-brand-50 p-4 text-brand-900"
         >
           {notice}
+        </p>
+      )}
+      {publicUrlError && (
+        <p
+          role="alert"
+          className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-900"
+        >
+          {publicUrlError}
         </p>
       )}
 
